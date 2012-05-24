@@ -1,9 +1,9 @@
-package com.mojang.mojam.level;
+package game.level;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import com.mojang.mojam.MojamComponent;
+import game.Game;
 
 public class LevelList {
 
@@ -27,7 +27,7 @@ public class LevelList {
 	}
 	
 	public static File getBaseDir(){
-		return new File(MojamComponent.getMojamDir(), "levels");
+		return new File(Game.getTempDir(), "levels");
 	}
 	
 	public static void loadDir(File file){

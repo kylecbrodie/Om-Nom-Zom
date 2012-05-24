@@ -1,10 +1,9 @@
-package com.mojang.mojam.level.tile;
+package game.level.tile;
 
-import com.mojang.mojam.level.Level;
-import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.gfx.Art;
+import game.gfx.Bitmap;
+import game.gfx.Screen;
+import game.level.Level;
 
 public class FloorTile extends Tile {
 
@@ -22,7 +21,7 @@ public class FloorTile extends Tile {
 	public static final String NAME = "FLOOR";
 
 	public FloorTile() {
-		img = TurnSynchronizer.synchedRandom.nextInt(4);
+		img = random.nextInt(4);
 		minimapColor = Art.floorTileColors[img & 7][img / 8];
 	}
 	@Override
@@ -32,11 +31,12 @@ public class FloorTile extends Tile {
 	}
 
 	@Override
-	public void render(AbstractScreen screen) {
+	public void render(Screen screen) {
 		super.render(screen);
 	}
 
 	@Override
+	@SuppressWarnings("unused")
 	public void neighbourChanged(Tile tile) {
 	    
 		final Tile w = level.getTile(x - 1, y);
@@ -63,24 +63,7 @@ public class FloorTile extends Tile {
 		if (nw != null && nw.castShadow() && w != null && !w.castShadow() && !this.isShadowed_north && !this.isShadowed_west){
             this.isShadowed_north_west = true;
         } else this.isShadowed_north_west = false;
-		if (this.isSandTile(nw)) {
-			img = 4 + 8;
-		} else if (this.isSandTile(ne)) {
-			img = 5 + 8;
-		} else if (this.isSandTile(sw)) {
-			img = 6 + 8;
-		} else if (this.isSandTile(se)) {
-			img = 7 + 8;
-		}
-		if (this.isSandTile(n)) {
-			img = 8;
-		} else if (this.isSandTile(e)) {
-			img = 1 + 8;
-		} else if (this.isSandTile(s)) {
-			img = 2 + 8;
-		} else if (this.isSandTile(w)) {
-			img = 3 + 8;
-		}
+		
 		minimapColor = Art.floorTileColors[img & 7][img / 8];
 	}
 
@@ -103,7 +86,7 @@ public class FloorTile extends Tile {
 
 
 	@Override
-	public AbstractBitmap getBitMapForEditor() {
+	public Bitmap getBitMapForEditor() {
 		return Art.floorTiles[0][0];
 	}
 
@@ -116,8 +99,4 @@ public class FloorTile extends Tile {
 	public void updateShadows(){
         neighbourChanged(null);
     }	
-	
-	public boolean isSandTile(Tile tile) {
-		return (tile instanceof SandTile || tile instanceof UnpassableSandTile);
-	}
 }

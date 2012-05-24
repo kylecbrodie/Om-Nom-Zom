@@ -1,15 +1,14 @@
-package com.mojang.mojam.level;
+package game.level;
 
 import java.util.HashMap;
 
-import com.mojang.mojam.MojamComponent;
-import com.mojang.mojam.mc.EnumOS2;
+import game.Game;
 
 public class LevelInformation {
 	public static HashMap<String, LevelInformation> fileToInfo = new HashMap<String, LevelInformation>();
 	private static int localIDcounter = 0;
 	
-	public static final boolean unix = MojamComponent.getOs().equals(EnumOS2.linux)||MojamComponent.getOs().equals(EnumOS2.macos);
+	public static final boolean unix = Game.getOS().equals("linux") || Game.getOS().equals("macos");
 	public static final String seperator = unix ? "/" : "\\";
 	
 	public int localID;
@@ -40,8 +39,10 @@ public class LevelInformation {
 	}
 	
 	public String getPath(){
-		if(vanilla) return levelFile;
-		return MojamComponent.getMojamDir()+seperator+levelFile;
+		if(vanilla) {
+			return levelFile;
+		}
+		return Game.getTempDir()+seperator+levelFile;
 	}
 	public String getUniversalPath(){
 		return levelFile;

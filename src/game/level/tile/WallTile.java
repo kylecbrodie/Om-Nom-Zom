@@ -1,14 +1,13 @@
-package com.mojang.mojam.level.tile;
+package game.level.tile;
 
 import java.util.List;
 
-import com.mojang.mojam.entity.Entity;
-import com.mojang.mojam.level.Level;
-import com.mojang.mojam.math.BB;
-import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.entity.Entity;
+import game.gfx.Art;
+import game.gfx.Bitmap;
+import game.gfx.Screen;
+import game.level.Level;
+import game.math.BB;
 
 public class WallTile extends Tile {
 	static final int WALLHEIGHT = 56;
@@ -16,7 +15,7 @@ public class WallTile extends Tile {
 	private static final String NAME = "WALL";
 
 	public WallTile() {
-		img = TurnSynchronizer.synchedRandom.nextInt(Art.wallTileColors.length);
+		img = random.nextInt(Art.wallTileColors.length);
 		minimapColor = Art.wallTileColors[img][0];
 	}
 	
@@ -36,13 +35,13 @@ public class WallTile extends Tile {
 				* Tile.WIDTH, (y + 1) * Tile.HEIGHT));
 	}
 
-	public void render(AbstractScreen screen) {
-		screen.blit(Art.wallTiles[img][0], x * Tile.WIDTH, y * Tile.HEIGHT
+	public void render(Screen screen) {
+		screen.draw(Art.wallTiles[img][0], x * Tile.WIDTH, y * Tile.HEIGHT
 				- (WALLHEIGHT - Tile.HEIGHT));
 	}
 
-	public void renderTop(AbstractScreen screen) {
-		screen.blit(Art.wallTiles[img][0], x * Tile.WIDTH, y * Tile.HEIGHT
+	public void renderTop(Screen screen) {
+		screen.draw(Art.wallTiles[img][0], x * Tile.WIDTH, y * Tile.HEIGHT
 				- (WALLHEIGHT - Tile.HEIGHT), 32, 32);
 	}
 
@@ -64,7 +63,7 @@ public class WallTile extends Tile {
 	}
 
 	@Override
-	public AbstractBitmap getBitMapForEditor() {
+	public Bitmap getBitMapForEditor() {
 		return Art.wallTiles[0][0];
 	}
 	

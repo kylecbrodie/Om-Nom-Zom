@@ -1,26 +1,19 @@
-package com.mojang.mojam.entity.building;
+package game.entity.building;
 
 import java.awt.Color;
 import java.util.Set;
 
-import com.mojang.mojam.MojamComponent;
-import com.mojang.mojam.entity.Bullet;
-import com.mojang.mojam.entity.Entity;
-import com.mojang.mojam.entity.Player;
-import com.mojang.mojam.entity.mob.Mob;
-import com.mojang.mojam.entity.mob.RailDroid;
-import com.mojang.mojam.entity.mob.SpikeTrap;
-import com.mojang.mojam.gui.TitleMenu;
-import com.mojang.mojam.level.IEditable;
-import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.Game;
+import game.entity.Entity;
+import game.entity.Player;
+import game.entity.mob.Mob;
+import game.level.Editable;
+import game.level.tile.Tile;
 
 /**
  * Defense turret. Automatically aims and shoots at the nearest monster.
  */
-public class Turret extends Building implements IEditable {
+public class Turret extends Building implements Editable {
 	
 	private static final float BULLET_DAMAGE = .75f;
 	

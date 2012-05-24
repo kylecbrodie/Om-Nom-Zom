@@ -1,40 +1,23 @@
-package com.mojang.mojam.entity;
+package game.entity;
 
 import java.util.Random;
 
-import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.Keys;
-import com.mojang.mojam.MojamComponent;
-import com.mojang.mojam.MouseButtons;
-import com.mojang.mojam.Options;
-import com.mojang.mojam.entity.animation.SmokePuffAnimation;
-import com.mojang.mojam.entity.building.Building;
-import com.mojang.mojam.entity.building.Harvester;
-import com.mojang.mojam.entity.building.ShopItem;
-import com.mojang.mojam.entity.building.Turret;
-import com.mojang.mojam.entity.loot.Loot;
-import com.mojang.mojam.entity.loot.LootCollector;
-import com.mojang.mojam.entity.mob.Mob;
-import com.mojang.mojam.entity.mob.RailDroid;
-import com.mojang.mojam.entity.mob.Team;
-import com.mojang.mojam.entity.particle.Sparkle;
-import com.mojang.mojam.entity.weapon.IWeapon;
-import com.mojang.mojam.entity.weapon.Rifle;
-import com.mojang.mojam.entity.weapon.WeaponInventory;
-import com.mojang.mojam.gui.Notifications;
-import com.mojang.mojam.level.tile.PlayerRailTile;
-import com.mojang.mojam.level.tile.RailTile;
-import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.math.Vec2;
-import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.Keys;
+import game.Game;
+import game.MouseButtons;
+import game.Options;
+import game.entity.animation.SmokePuffAnimation;
+import game.entity.building.Building;
+import game.entity.mob.Mob;
+import game.entity.mob.Team;
+import game.entity.particle.Sparkle;
+import game.level.tile.Tile;
+import game.math.Vec2;
 
 /**
  * Implements the player entity
  */
-public class Player extends Mob implements LootCollector {
+public class Player extends Mob {
     public static int COST_RAIL;
     public static int COST_DROID;
     public static int COST_REMOVE_RAIL;
@@ -77,11 +60,6 @@ public class Player extends Mob implements LootCollector {
     private int deadDelay = 0;
     private int nextWalkSmokeTick = 0;
     boolean isImmortal;
-    private GameCharacter character;
-
-    public WeaponInventory weaponInventory = new WeaponInventory();
-    private int weaponSlot = 0;
-    private boolean isWeaponChanged = false;
     
     private boolean isSprintIgnore = false;
     
@@ -94,12 +72,11 @@ public class Player extends Mob implements LootCollector {
      * @param y Initial y coordinate
      * @param team Team number
      */
-    public Player(Keys keys, MouseButtons mouseButtons, int x, int y, int team, GameCharacter character) {
+    public Player(Keys keys, MouseButtons mouseButtons, int x, int y, int team) {
         super(x, y, team);
         this.keys = keys;
         this.mouseButtons = mouseButtons;
-        this.character = character;
-
+        
         startX = x;
         startY = y;
 
@@ -112,8 +89,6 @@ public class Player extends Mob implements LootCollector {
         aimVector = new Vec2(0, 1);
         score = 0;
         
-        weaponInventory.add(new Rifle(this));
-        weapon = weaponInventory.get(weaponSlot);
         setRailPricesAndImmortality();
     }
     
@@ -144,7 +119,7 @@ public class Player extends Mob implements LootCollector {
             psprint += 0.1;
             maxTimeSprint += 20;
 
-            MojamComponent.soundPlayer.playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
+            Game.soundPlayer.playSound("/sound/levelUp.wav", (float) pos.x, (float) pos.y, true);
         }
     }
 
@@ -183,8 +158,8 @@ public class Player extends Mob implements LootCollector {
         if (!mouseButtons.mouseHidden) {
             // Update player mouse, in world pixels relative to player
             setAimByMouse(
-                    (mouseButtons.getX() - (MojamComponent.screen.getWidth() / 2)),
-                    ((mouseButtons.getY() + 24) - (MojamComponent.screen.getHeight() / 2)));
+                    (mouseButtons.getX() - (Game.GAME_WIDTH / 2)),
+                    ((mouseButtons.getY() + 24) - (Game.GAME_HEIGHT / 2)));
         } else {
             setAimByKeyboard();
         }
@@ -876,9 +851,9 @@ public class Player extends Mob implements LootCollector {
         this.isSeeing = b;
     }
 
-    @Override
+    /*@Override
     public void notifySucking() {
-    }
+    }*/
 
     @Override
     public void hurt(Entity source, float damage) {
@@ -899,7 +874,7 @@ public class Player extends Mob implements LootCollector {
                 xBump = (pos.x - source.pos.x) / dist * 10;
                 yBump = (pos.y - source.pos.y) / dist * 10;
 
-                MojamComponent.soundPlayer.playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
+                Game.soundPlayer.playSound("/sound/hit2.wav", (float) pos.x, (float) pos.y, true);
             }
         }
     }
@@ -955,7 +930,4 @@ public class Player extends Mob implements LootCollector {
     public void updateFacing() {
         facing = (int) ((Math.atan2(-aimVector.x, aimVector.y) * 8 / (Math.PI * 2) + 8.5)) & 7;
     }
-
-
-
 }

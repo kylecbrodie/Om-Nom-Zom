@@ -1,29 +1,22 @@
-package com.mojang.mojam.entity.mob;
+package game.entity.mob;
 
-import com.mojang.mojam.GameCharacter;
-import com.mojang.mojam.MojamComponent;
-import com.mojang.mojam.buff.Buff;
-import com.mojang.mojam.buff.Buffs;
-import com.mojang.mojam.entity.Bullet;
-import com.mojang.mojam.entity.Entity;
-import com.mojang.mojam.entity.Player;
-import com.mojang.mojam.entity.animation.EnemyDieAnimation;
-import com.mojang.mojam.entity.animation.ItemFallAnimation;
-import com.mojang.mojam.entity.animation.PlayerFallingAnimation;
-import com.mojang.mojam.entity.building.Building;
-import com.mojang.mojam.entity.building.Harvester;
-import com.mojang.mojam.entity.building.SpawnerEntity;
-import com.mojang.mojam.entity.loot.Loot;
-import com.mojang.mojam.entity.weapon.IWeapon;
-import com.mojang.mojam.gui.TitleMenu;
-import com.mojang.mojam.level.tile.HoleTile;
-import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.math.BB;
-import com.mojang.mojam.math.Vec2;
-import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.Game;
+import game.Options;
+import game.entity.Bullet;
+import game.entity.Entity;
+import game.entity.Player;
+import game.entity.animation.EnemyDieAnimation;
+import game.entity.animation.ItemFallAnimation;
+import game.entity.animation.PlayerFallingAnimation;
+import game.entity.building.Building;
+import game.entity.building.SpawnerEntity;
+import game.entity.loot.Loot;
+import game.level.tile.Tile;
+import game.math.BB;
+import game.math.Vec2;
+import game.gfx.Art;
+import game.gfx.Bitmap;
+import game.gfx.Screen;
 
 public abstract class Mob extends Entity {
 
@@ -60,15 +53,13 @@ public abstract class Mob extends Entity {
     protected int limp;
 	public boolean isSprint = false;
     public Vec2 aimVector;
-    public IWeapon weapon;
-	protected Buffs buffs = new Buffs();
 	private boolean highlight;
 	
 	public Mob(double x, double y, int team) {
 		super();
 		setPos(x, y);
 		this.team = team;
-		this.REGEN_INTERVAL = TitleMenu.difficulty.getRegenerationInterval();
+		this.REGEN_INTERVAL = Options.difficulty.getRegenerationInterval();
 		this.healingTime = this.REGEN_INTERVAL;
 		aimVector = new Vec2(0, 1);
 	}
@@ -104,8 +95,7 @@ public abstract class Mob extends Entity {
 	}
 
 	public void tick() {
-		this.buffs.tick();
-		if (TitleMenu.difficulty.isMobRegenerationAllowed() || this.team != Team.Neutral) {
+		if (Options.difficulty.isMobRegenerationAllowed() || this.team != Team.Neutral) {
 			this.doRegenTime();
 		}
 		
@@ -135,12 +125,6 @@ public abstract class Mob extends Entity {
 				return;
 			}
 		}
-		
-		handleWeaponFire(xd, yd);
-	}
-	
-	public void addBuff( Buff buff ) {
-		this.buffs.add(buff);
 	}
 	
 	public void doRegenTime() {
@@ -192,7 +176,7 @@ public abstract class Mob extends Entity {
 
 		level.addEntity(new EnemyDieAnimation(pos.x, pos.y));
 
-		MojamComponent.soundPlayer.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
+		Game.soundPlayer.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
 	}
 
 	public String getDeathSound() {
@@ -209,22 +193,22 @@ public abstract class Mob extends Entity {
 		return re;
 	}
 
-	public void render(AbstractScreen screen) {
-		AbstractBitmap image = getSprite();
+	public void render(Screen screen) {
+		Bitmap image = getSprite();
 		if (hurtTime > 0) {
 			if (hurtTime > 40 - 6 && hurtTime / 2 % 2 == 0) {
-				screen.colorBlit(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs, 0xa0ffffff);
+				screen.drawColor(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs, 0xa0ffffff);
 			} else {
 				if (health < 0)
 					health = 0;
 				int col = (int) (180 - health * 180 / maxHealth);
 				if (hurtTime < 10)
 					col = col * hurtTime / 10;
-				screen.colorBlit(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs, (col << 24) + 255 * 65536);
+				screen.drawColor(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs, (col << 24) + 255 * 65536);
 			}
 		} else {
 					
-			screen.blit(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs);
+			screen.draw(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs);
 		}
 
 		if (doShowHealthBar && health < maxHealth) {
@@ -238,14 +222,14 @@ public abstract class Mob extends Entity {
 	 * Render the marker onto the given screen
 	 * 
 	 * @param screen
-	 *            AbstractScreen
+	 *            Screen
 	 */
-	protected void renderMarker(AbstractScreen screen) {
+	protected void renderMarker(Screen screen) {
 		
 		//Don't draw the marker if this doesn't belong to the local team
 		//or is not Neutral
 		
-		if (!( team == Team.Neutral || team == MojamComponent.localTeam )) {
+		if (!( team == Team.Neutral || team == Game.localTeam )) {
 			return;
 		}
 		
@@ -255,7 +239,7 @@ public abstract class Mob extends Entity {
 					/ (3 + Math.sin(System.currentTimeMillis() * .01)));
 			int width = (int) (bb.x1 - bb.x0);
 			int height = (int) (bb.y1 - bb.y0);
-			AbstractBitmap marker = screen.createBitmap(width, height);
+			Bitmap marker = screen.createBitmap(width, height);
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
 					if ((x < 2 || x > width - 3 || y < 2 || y > height - 3)
@@ -270,7 +254,7 @@ public abstract class Mob extends Entity {
 		}
 	}
 	
-	protected void addHealthBar(AbstractScreen screen) {
+	protected void addHealthBar(Screen screen) {
         
         int start = (int) (health * 21 / maxHealth);
         
@@ -296,7 +280,7 @@ public abstract class Mob extends Entity {
 		screen.blit(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
     }
 
-	protected void renderCarrying(AbstractScreen screen, int yOffs) {
+	protected void renderCarrying(Screen screen, int yOffs) {
 		if (carrying == null)
 			return;
 
@@ -305,7 +289,7 @@ public abstract class Mob extends Entity {
 		carrying.yOffs += yOffs;
 	}
 
-	public abstract AbstractBitmap getSprite();
+	public abstract Bitmap getSprite();
 
 	public void hurt(Entity source, float damage) {
 		if (isImmortal)
@@ -473,9 +457,9 @@ public abstract class Mob extends Entity {
                 }
                 // TODO add a sex attribute to Characters
                 if (character.ordinal() < 2)
-                    MojamComponent.soundPlayer.playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
+                    Game.soundPlayer.playSound("/sound/falling_male.wav", (float) pos.x, (float) pos.y);
                 else
-                    MojamComponent.soundPlayer.playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
+                    Game.soundPlayer.playSound("/sound/falling_female.wav", (float) pos.x, (float) pos.y);
             }
             return true;
         }
@@ -507,8 +491,8 @@ public abstract class Mob extends Entity {
     		}
 
     		stepTime++;
-    		if ((!move(xd, yd) || (walkTime > 10 && TurnSynchronizer.synchedRandom.nextInt(200) == 0) && chasing==false)) {
-    			facing = TurnSynchronizer.synchedRandom.nextInt(4);
+    		if ((!move(xd, yd) || (walkTime > 10 && random.nextInt(200) == 0) && chasing==false)) {
+    			facing = random.nextInt(4);
     			walkTime = 0;
     		}
     	}
@@ -523,17 +507,6 @@ public abstract class Mob extends Entity {
      */
     public Vec2 getPosition() {
         return pos;
-    }
-    
-    /**
-     * Handle weapon fire
-     * 
-     * @param xa Position change on the x axis
-     * @param ya Position change on the y axis
-     */
-    private void handleWeaponFire(double xa, double ya) {
-    	if(weapon != null)
-        weapon.weapontick();
     }
 
 	public boolean isHighlight() {

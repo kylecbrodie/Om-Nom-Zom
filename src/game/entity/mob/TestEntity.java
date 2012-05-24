@@ -1,15 +1,15 @@
-package com.mojang.mojam.entity.mob;
+package game.entity.mob;
 
-import com.mojang.mojam.network.TurnSynchronizer;
-import com.mojang.mojam.screen.AbstractBitmap;
-import com.mojang.mojam.screen.Art;
+import game.gfx.Art;
+import game.gfx.Bitmap;
 
 public class TestEntity extends Mob {
+
 	public TestEntity(double x, double y) {
 		super(x, y, Team.Neutral);
 		setPos(x, y);
 		setStartHealth(1);
-		dir = TurnSynchronizer.synchedRandom.nextDouble() * Math.PI * 2;
+		dir = random.nextDouble() * Math.PI * 2;
 		minimapColor = 0xffff0000;
 		yOffs = 14;
 	}
@@ -19,13 +19,11 @@ public class TestEntity extends Mob {
 		if (freezeTime > 0)
 			return;
 
-		dir += (TurnSynchronizer.synchedRandom.nextDouble() - TurnSynchronizer.synchedRandom
-				.nextDouble()) * 0.2;
+		dir += (random.nextDouble() - random.nextDouble()) * 0.2;
 		xd += Math.cos(dir) * 1;
 		yd += Math.sin(dir) * 1;
 		if (!move(xd, yd)) {
-			dir += (TurnSynchronizer.synchedRandom.nextDouble() - TurnSynchronizer.synchedRandom
-					.nextDouble()) * 0.8;
+			dir += (random.nextDouble() - random.nextDouble()) * 0.8;
 		}
 		xd *= 0.2;
 		yd *= 0.2;
@@ -35,9 +33,9 @@ public class TestEntity extends Mob {
 		super.die();
 	}
 
-	public AbstractBitmap getSprite() {
+	public Bitmap getSprite() {
 		int facing = (int) ((Math.atan2(xd, -yd) * 4 / (Math.PI * 2) + 2.5)) & 3;
 
-		return Art.mummy[facing][0];
+		return Art.entityFillerMoving[facing][0];
 	}
 }

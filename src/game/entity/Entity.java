@@ -1,18 +1,19 @@
-package com.mojang.mojam.entity;
+package game.entity;
 
 import java.util.List;
+import java.util.Random;
 
-import com.mojang.mojam.entity.animation.LargeBombExplodeAnimation;
-import com.mojang.mojam.level.Level;
-import com.mojang.mojam.level.tile.Tile;
-import com.mojang.mojam.math.BB;
-import com.mojang.mojam.math.BBOwner;
-import com.mojang.mojam.math.Vec2;
-import com.mojang.mojam.screen.Art;
-import com.mojang.mojam.screen.AbstractScreen;
+import game.level.Level;
+import game.level.tile.Tile;
+import game.math.BB;
+import game.math.BBOwner;
+import game.math.Vec2;
+import game.gfx.Art;
+import game.gfx.Screen;
 
 public abstract class Entity implements BBOwner {
 
+	protected Random random = new Random();
 	public Level level;
 	public boolean removed;
 	public Vec2 pos = new Vec2(0, 0);
@@ -27,6 +28,8 @@ public abstract class Entity implements BBOwner {
 	public int minimapIcon = -1;
 	public int minimapColor = -1;
 	public int team;
+
+	private Entity spawnSource;
 
 	public void setPos(double x, double y) {
 		pos.set(x, y);
@@ -60,11 +63,11 @@ public abstract class Entity implements BBOwner {
 		return new BB(this, pos.x - radius.x, pos.y - radius.y, pos.x + radius.x, pos.y + radius.y);
 	}
 
-	public void render(AbstractScreen screen) {
-		screen.blit(Art.floorTiles[3][0], pos.x - Tile.WIDTH / 2, pos.y - Tile.HEIGHT / 2 - 8);
+	public void render(Screen screen) {
+		screen.draw(Art.entityFiller, pos.x - Tile.WIDTH / 2, pos.y - Tile.HEIGHT / 2 - 8);
 	}
 	
-	public void renderTop(AbstractScreen screen) {
+	public void renderTop(Screen screen) {
 	}
 	
 	protected boolean move(double xa, double ya) {
@@ -176,9 +179,6 @@ public abstract class Entity implements BBOwner {
 	public void collide(Entity entity, double xa, double ya) {
 	}
 
-	public void hurt(Bullet bullet) {
-	}
-
-	public void bomb(LargeBombExplodeAnimation largeBombExplodeAnimation) {
+	public void hurt() {
 	}
 }

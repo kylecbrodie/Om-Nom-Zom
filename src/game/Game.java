@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferStrategy;
+import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -18,18 +19,21 @@ import game.gfx.Screen;
 public class Game extends Canvas implements Runnable {
 	private static final long serialVersionUID = 1L;
 	
-	public final String NAME = "OmNomZom";
-	public final int GAME_WIDTH = 512;
-	public final int GAME_HEIGHT = GAME_WIDTH * 3 / 4;
-	public final int SCALE = 2;
+	public static final String NAME = "OmNomZom";
+	public static final int GAME_WIDTH = 512;
+	public static final int GAME_HEIGHT = GAME_WIDTH * 3 / 4;
+	public static final int SCALE = 2;
+	public static final int TICKS_PER_SEC = 60;
 	
 	private boolean running = false;
-	public static final int TICKS_PER_SEC = 60;
 	public long totalTicks,totalGameTicks;
 
 	private Screen screen = new Screen(GAME_WIDTH,GAME_HEIGHT);
 	private Keys keys = new Keys();
 	private Level level;
+	public static Object soundPlayer;
+	
+	private static volatile File tempDir = null;
 	
 	private void init() {
             running = true;
@@ -93,7 +97,9 @@ public class Game extends Canvas implements Runnable {
 			level.tick();
 		}
 	}
+	
 	private static boolean drewPaused = false;
+	
 	private void render(Graphics g) {
             if(!this.hasFocus()) {
                 if(!drewPaused) {
@@ -140,5 +146,44 @@ public class Game extends Canvas implements Runnable {
 	
 	public void stop() {
 		running = false;
+	}
+
+	public static File getTempDir() {
+		if (tempDir == null) {
+		tempDir = getAppDir("omnomzom");
+		}
+		return tempDir;
+		}
+
+	public static File getAppDir(String s) {
+		String s1 = System.getProperty("user.home", ".");
+		File file;
+		String sys = getOS();
+		
+		if (sys.contains("win")) {
+			String s2 = System.getenv("APPDATA");
+			if (s2 != null) {
+				file = new File(s2, (new StringBuilder()).append(".").append(s).append('/').toString());
+			} else {
+				file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
+			}
+		} else if (s.contains("mac")) {
+			file = new File(s1, (new StringBuilder()).append("Library/Application Support/").append(s).toString());
+		} else if (s.contains("solaris")) {
+			file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
+		} else if (s.contains("linux")) {
+			file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
+		} else {
+			file = new File(s1, (new StringBuilder()).append(s).append('/').toString());
+		}
+		if (!file.exists() && !file.mkdirs()) {
+			throw new RuntimeException((new StringBuilder()).append("The working directory could not be created: ").append(file).toString());
+		} else {
+			return file;
+		}
+	}
+	
+	public static String getOS() {
+		return System.getProperty("os.name").toLowerCase();;
 	}
 }

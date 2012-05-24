@@ -4,53 +4,106 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import game.Keys.Key;
 
 public class InputHandler implements KeyListener {
-	private Map<Integer, Key> mappings = new HashMap<Integer, Key>();
+
+	private Map<Key, Integer> mappings = new HashMap<Key, Integer>();
 
 	public InputHandler(Keys keys) {
-		mappings.put(KeyEvent.VK_UP, keys.up);
-		mappings.put(KeyEvent.VK_DOWN, keys.down);
-		mappings.put(KeyEvent.VK_LEFT, keys.left);
-		mappings.put(KeyEvent.VK_RIGHT, keys.right);
+		// controls
+		initKey(keys.up, KeyEvent.VK_W);
+		initKey(keys.down, KeyEvent.VK_S);
+		initKey(keys.left, KeyEvent.VK_A);
+		initKey(keys.right, KeyEvent.VK_D);
+		initKey(keys.sprint, KeyEvent.VK_SHIFT);
 
-		mappings.put(KeyEvent.VK_NUMPAD8, keys.up);
-		mappings.put(KeyEvent.VK_NUMPAD2, keys.down);
-		mappings.put(KeyEvent.VK_NUMPAD4, keys.left);
-		mappings.put(KeyEvent.VK_NUMPAD6, keys.right);
-
-		mappings.put(KeyEvent.VK_W, keys.up);
-		mappings.put(KeyEvent.VK_S, keys.down);
-		mappings.put(KeyEvent.VK_A, keys.left);
-		mappings.put(KeyEvent.VK_D, keys.right);
-
-		mappings.put(KeyEvent.VK_SPACE, keys.fire);
-		mappings.put(KeyEvent.VK_ALT, keys.fire);
-		mappings.put(KeyEvent.VK_CONTROL, keys.fire);
-		mappings.put(KeyEvent.VK_SHIFT, keys.fire);
-        mappings.put(KeyEvent.VK_C, keys.fire);
-        
-        mappings.put(KeyEvent.VK_Z, keys.use);
-		mappings.put(KeyEvent.VK_E, keys.use);
+		// actions
+		initKey(keys.fire, KeyEvent.VK_SPACE);
+		initKey(keys.fireUp, KeyEvent.VK_UP);
+		initKey(keys.fireDown, KeyEvent.VK_DOWN);
+		initKey(keys.fireLeft, KeyEvent.VK_LEFT);
+		initKey(keys.fireRight, KeyEvent.VK_RIGHT);
+		initKey(keys.build, KeyEvent.VK_R);
+		initKey(keys.use, KeyEvent.VK_E);
+		initKey(keys.upgrade, KeyEvent.VK_F);
+		initKey(keys.pause, KeyEvent.VK_ESCAPE);
+		initKey(keys.screenShot, KeyEvent.VK_F2);
+		initKey(keys.fullscreen, KeyEvent.VK_F11);
+		initKey(keys.chat, KeyEvent.VK_T);
+		initKey(keys.weaponSlot1, KeyEvent.VK_1);
+		initKey(keys.weaponSlot2, KeyEvent.VK_2);
+		initKey(keys.weaponSlot3, KeyEvent.VK_3);
+		initKey(keys.cycleLeft, KeyEvent.VK_Z);
+		initKey(keys.cycleRight, KeyEvent.VK_X);
+		
+		//console
+		initKey(keys.console, KeyEvent.VK_BACK_QUOTE);
 	}
 
+	private void initKey(Key key, int defaultKeyCode) {
+		int keyCode = defaultKeyCode;
+		String property = Options.get(getKey(key));
+		if (property != null) {
+			try {
+				keyCode = Integer.parseInt(property);
+			} catch (NumberFormatException e) {
+				// default key code will be used
+			}
+		}
+		mappings.put(key, keyCode);
+	}
+
+	private String getKey(Key key) {
+		return "key_" + key.name;
+	}
+
+	public void addMapping(Key key, int keyCode) {
+		// make sure no key is bound to more than one event
+		clearMappings(keyCode);
+		mappings.put(key, keyCode);
+		Options.set(getKey(key), String.valueOf(keyCode));
+	}
+
+	private void clearMappings(int keyCode) {
+		Set<Key> keySet = mappings.keySet();
+		for (Key _key : keySet) {
+			if (mappings.get(_key) == keyCode) {
+				mappings.put(_key, KeyEvent.VK_UNDEFINED);
+				Options.set(getKey(_key), String.valueOf(keyCode));
+			}
+		}
+	}
+	
+	public Integer getKeyEvent(Key key) {
+		return mappings.get(key);
+	}
+
+	@Override
 	public void keyPressed(KeyEvent ke) {
 		toggle(ke, true);
 	}
 
+	@Override
 	public void keyReleased(KeyEvent ke) {
 		toggle(ke, false);
 	}
 
-	public void keyTyped(KeyEvent ke) {
-	}
+	@Override
+	public void keyTyped(KeyEvent ke) {}
 
 	private void toggle(KeyEvent ke, boolean state) {
-		Key key = mappings.get(ke.getKeyCode());
+		Key key = null;
+		Set<Key> keySet = mappings.keySet();
+		for (Key _key : keySet) {
+			if (mappings.get(_key) == ke.getKeyCode())
+				key = _key;
+		}
 		if (key != null) {
 			key.nextState = state;
+			ModSystem.keyEvent(key, state);
 		}
 	}
 }

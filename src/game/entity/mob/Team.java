@@ -1,4 +1,4 @@
-package com.mojang.mojam.entity.mob;
+package game.entity.mob;
 
 public class Team {
 	public static final int Neutral = 0;

@@ -1,8 +1,9 @@
-package com.mojang.mojam.entity.animation;
+package game.entity.animation;
 
-import com.mojang.mojam.entity.Entity;
+import game.entity.Entity;
 
 public class Animation extends Entity {
+	
 	public int life;
 	public int duration;
 
