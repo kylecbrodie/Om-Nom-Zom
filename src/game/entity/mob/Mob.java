@@ -2,15 +2,10 @@ package game.entity.mob;
 
 import game.Game;
 import game.Options;
-import game.entity.Bullet;
 import game.entity.Entity;
 import game.entity.Player;
-import game.entity.animation.EnemyDieAnimation;
 import game.entity.animation.ItemFallAnimation;
-import game.entity.animation.PlayerFallingAnimation;
 import game.entity.building.Building;
-import game.entity.building.SpawnerEntity;
-import game.entity.loot.Loot;
 import game.level.tile.Tile;
 import game.math.BB;
 import game.math.Vec2;
@@ -139,9 +134,6 @@ public abstract class Mob extends Entity {
 	public void onRegenTime() {
 		float regen = this.REGEN_AMOUNT ;
 		// Can add thing here like a custom regen action
-		// Like apply buffs based to Health effects
-		regen = this.buffs.effectsOf(Buff.BuffType.HEALTH_MODIF, regen);
-		regen = this.buffs.effectsOf(Buff.BuffType.REGEN_RATE  , regen);
 
 		this.regenerateHealthBy( regen );
 	}
@@ -170,13 +162,13 @@ public abstract class Mob extends Entity {
 			for (int i = 0; i < loots; i++) {
 				double dir = i * Math.PI * 2 / particles;
 
-				level.addEntity(new Loot(pos.x, pos.y, Math.cos(dir), Math.sin(dir), getDeathPoints()));
+				//level.addEntity(new Loot(pos.x, pos.y, Math.cos(dir), Math.sin(dir), getDeathPoints()));
 			}
 		}
 
-		level.addEntity(new EnemyDieAnimation(pos.x, pos.y));
+		//level.addEntity(new EnemyDieAnimation(pos.x, pos.y));
 
-		Game.soundPlayer.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
+		//Game.soundPlayer.playSound(getDeathSound(), (float) pos.x, (float) pos.y);
 	}
 
 	public String getDeathSound() {
@@ -211,9 +203,9 @@ public abstract class Mob extends Entity {
 			screen.draw(image, pos.x - image.getWidth() / 2, pos.y - image.getHeight() / 2 - yOffs);
 		}
 
-		if (doShowHealthBar && health < maxHealth) {
-            addHealthBar(screen);
-        }
+		//if (doShowHealthBar && health < maxHealth) {
+        //    addHealthBar(screen);
+        //}
 		
 		renderMarker(screen);
 	}
@@ -229,9 +221,9 @@ public abstract class Mob extends Entity {
 		//Don't draw the marker if this doesn't belong to the local team
 		//or is not Neutral
 		
-		if (!( team == Team.Neutral || team == Game.localTeam )) {
-			return;
-		}
+		//if (!( team == Team.Neutral || team == Game.localTeam )) {
+		//	return;
+		//}
 		
 		if (highlight) {
 			BB bb = getBB();
@@ -239,7 +231,7 @@ public abstract class Mob extends Entity {
 					/ (3 + Math.sin(System.currentTimeMillis() * .01)));
 			int width = (int) (bb.x1 - bb.x0);
 			int height = (int) (bb.y1 - bb.y0);
-			Bitmap marker = screen.createBitmap(width, height);
+			Bitmap marker = new Bitmap(width, height);
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
 					if ((x < 2 || x > width - 3 || y < 2 || y > height - 3)
@@ -250,11 +242,11 @@ public abstract class Mob extends Entity {
 					}
 				}
 			}
-			screen.blit(marker, bb.x0, bb.y0 - 4);
+			screen.draw(marker, bb.x0, bb.y0 - 4);
 		}
 	}
 	
-	protected void addHealthBar(Screen screen) {
+	/*protected void addHealthBar(Screen screen) {
         
         int start = (int) (health * 21 / maxHealth);
         
@@ -275,10 +267,10 @@ public abstract class Mob extends Entity {
 			color = 0x8af116;
 		}
 
-		screen.blit(Art.healthBar_Underlay[0][0], pos.x - 16, pos.y + healthBarOffset);
-		screen.colorBlit(Art.healthBar[start][0], pos.x - 16, pos.y + healthBarOffset, (0xff << 24) + color);
-		screen.blit(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
-    }
+		screen.draw(Art.healthBar_Underlay[0][0], pos.x - 16, pos.y + healthBarOffset);
+		screen.drawColor(Art.healthBar[start][0], pos.x - 16, pos.y + healthBarOffset, (0xff << 24) + color);
+		screen.draw(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
+    }*/
 
 	protected void renderCarrying(Screen screen, int yOffs) {
 		if (carrying == null)
@@ -297,7 +289,7 @@ public abstract class Mob extends Entity {
 		
 		this.healingTime = this.REGEN_INTERVAL;
 		
-		if (source instanceof Bullet){
+		/*if (source instanceof Bullet){
 			Bullet bullet = (Bullet) source;
 			if (bullet.owner instanceof Player){
 				Player pl = (Player) bullet.owner;
@@ -305,11 +297,11 @@ public abstract class Mob extends Entity {
 					return;
 				}
 			}
-		}
+		}*/
 				
 		if (freezeTime <= 0) {
 			
-			if (source instanceof Bullet && !(this instanceof SpawnerEntity) && !(this instanceof RailDroid)) {
+			/*if (source instanceof Bullet && !(this instanceof SpawnerEntity) && !(this instanceof RailDroid)) {
 				Bullet bullet = (Bullet) source;
 				if (bullet.owner instanceof Player) {
 					Player pl = (Player) bullet.owner;
@@ -319,7 +311,7 @@ public abstract class Mob extends Entity {
 				freezeTime = bullet.freezeTime;
 			} else {
 				freezeTime = 5;
-			}
+			}*/freezeTime = 5;
 			
 			hurtTime = 40;
 			health -= damage;
@@ -433,7 +425,7 @@ public abstract class Mob extends Entity {
         return false;
     }
     
-    public boolean fallDownHole() {
+    /*public boolean fallDownHole() {
         int x=(int)(pos.x/Tile.WIDTH);
         int y=(int)(pos.y/Tile.HEIGHT);
         if (level.getTile(x, y) instanceof HoleTile) {
@@ -464,7 +456,7 @@ public abstract class Mob extends Entity {
             return true;
         }
         return false;
-    }
+    }*/
     
     public void walk(){
     	switch (facing) {

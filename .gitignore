@@ -1,14 +1,15 @@
+# Standard Java #
 *.class
-
-# Package Files #
 *.jar
-*.war
-*.ear
+
+# Mac OS X #
+.DS_Store
 
 # Eclipse #
-.classpath
-.project
+#.classpath
+#.project
 bin
 
 # Netbeans #
 build
+nbproject

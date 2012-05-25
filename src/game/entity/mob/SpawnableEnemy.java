@@ -1,9 +1,7 @@
-package com.mojang.mojam.entity.mob;
+package game.entity.mob;
 
 import java.lang.reflect.Constructor;
-
-import com.mojang.mojam.network.TurnSynchronizer;
-
+import java.util.Random;
 
 /**
  * @author andy36
@@ -14,11 +12,9 @@ import com.mojang.mojam.network.TurnSynchronizer;
  *
  */
 public enum SpawnableEnemy {
-	BAT(0, Bat.class),
-	SNAKE(1, Snake.class),
-	MUMMY(2, Mummy.class),
-	SCARAB(3, Scarab.class);
+	 ;
 	 
+	private static Random random = new Random();
 	private int type;
 	private Class<? extends HostileMob> clazz;
 
@@ -51,7 +47,7 @@ public enum SpawnableEnemy {
 	public static Mob spawnRandomHostileMob(int x, int y) {
 		Mob te = null;
 		try {
-			SpawnableEnemy randomEnemyClass = SpawnableEnemy.getByType(TurnSynchronizer.synchedRandom.nextInt(SpawnableEnemy.values().length))  ;
+			SpawnableEnemy randomEnemyClass = SpawnableEnemy.getByType(random.nextInt(SpawnableEnemy.values().length))  ;
 			
 			//This whole try/catch block is to create the new enemy of the given type using reflection. This will allow new enemies to be added without touching this 
 			//code as long as they are defined in SpawnableEnemies enum and have a public constructor that takes (double, double)

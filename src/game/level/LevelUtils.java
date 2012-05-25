@@ -1,25 +1,16 @@
 package game.level;
-
+/*
 import game.entity.Entity;
 import game.entity.building.Turret;
 import game.entity.mob.Team;
 import game.level.tile.DestroyableWallTile;
-import game.level.tile.DropTrap;
 import game.level.tile.FloorTile;
 import game.level.tile.HoleTile;
-import game.level.tile.PlayerBaseLeft;
-import game.level.tile.PlayerBaseRight;
-import game.level.tile.PlayerRailTile;
-import game.level.tile.PlayerSpawn;
-import game.level.tile.RailTile;
-import game.level.tile.SandTile;
 import game.level.tile.Tile;
-import game.level.tile.UnbreakableRailTile;
-import game.level.tile.UnpassableSandTile;
 import game.level.tile.WallTile;
-
+*/
 public class LevelUtils {
-	
+/*	
 	private static final int TILESET_FLOOR_BASE_ID = 1;
 	private static final int TILESET_OVERLAY_BASE_ID = 65;
 	private static final int TILESET_WALL_BASE_ID = 129;
@@ -424,5 +415,5 @@ public class LevelUtils {
 		
 		return entity;
 	}
-	
+*/	
 }

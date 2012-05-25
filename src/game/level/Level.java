@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import game.GameCharacter;
-import game.MojamComponent;
+import game.Game;
+import game.Options;
 import game.entity.Entity;
 import game.entity.Player;
 import game.entity.mob.Mob;
@@ -18,12 +19,7 @@ import game.entity.predicates.EntityIntersectsBBAndInstanceOf;
 import game.gfx.Art;
 import game.gfx.Bitmap;
 import game.gfx.Screen;
-import game.gui.Notifications;
-import game.gui.TitleMenu;
-import game.gui.components.Font;
-import game.level.gamemode.ILevelTickItem;
-import game.level.gamemode.IVictoryConditions;
-import game.level.tile.AnimatedTile;
+import game.gfx.Font;
 import game.level.tile.FloorTile;
 import game.level.tile.Tile;
 import game.level.tile.WallTile;
@@ -32,6 +28,8 @@ import game.math.BBPredicate;
 import game.math.Vec2;
 
 public class Level {
+
+	private Random random = new Random();
 
 	private LinkedList<Tile>[] tiles;
 	private List<Vec2> spawnPointsP1;
@@ -46,20 +44,20 @@ public class Level {
 	public final int width, height;
 	public List<Entity>[] entityMap;
 	public List<Entity> entities = new ArrayList<Entity>();
-	public List<ILevelTickItem> tickItems = new ArrayList<ILevelTickItem>();;
+	// public List<Updateable> tickItems = new ArrayList<Updateable>();
 	public int maxMonsters;
 
 	public int[][] monsterDensity;
 	public int densityTileWidth = 5;
 	public int densityTileHeight = 5;
 
-	public IVictoryConditions victoryConditions;
 	public int player1Score = 0;
 	public int player2Score = 0;
 
 	@SuppressWarnings("unchecked")
 	public Level(int width, int height) {
-		neighbourOffsets = new int[] { -1, 1, -width, -width + 1, -width - 1, width, width + 1, width - 1 };
+		neighbourOffsets = new int[] { -1, 1, -width, -width + 1, -width - 1,
+				width, width + 1, width - 1 };
 		this.width = width;
 		this.height = height;
 
@@ -129,9 +127,9 @@ public class Level {
 
 		updateTiles(x, y, tile);
 
-		if (tile instanceof AnimatedTile) {
-			tickItems.add((ILevelTickItem) tile);
-		}
+		// if (tile instanceof AnimatedTile) {
+		// tickItems.add((Updateable) tile);
+		// }
 	}
 
 	public Tile getTile(int x, int y) {
@@ -190,10 +188,10 @@ public class Level {
 	public Vec2 getRandomSpawnPoint(int team) {
 		int index;
 		if (team == Team.Team1) {
-			index = TurnSynchronizer.synchedRandom.nextInt(spawnPointsP1.size() - 1);
+			index = random.nextInt(spawnPointsP1.size() - 1);
 			return spawnPointsP1.get(index);
 		} else if (team == Team.Team2) {
-			index = TurnSynchronizer.synchedRandom.nextInt(spawnPointsP2.size() - 1);
+			index = random.nextInt(spawnPointsP2.size() - 1);
 			return spawnPointsP2.get(index);
 		} else {
 			return null;
@@ -257,11 +255,14 @@ public class Level {
 		return getEntities(bb.x0, bb.y0, bb.x1, bb.y1, c);
 	}
 
-	public Set<Entity> getEntities(double x0, double y0, double x1, double y1, Class<? extends Entity> c) {
-		return getEntities(x0, y0, x1, y1, new EntityIntersectsBBAndInstanceOf(c));
+	public Set<Entity> getEntities(double x0, double y0, double x1, double y1,
+			Class<? extends Entity> c) {
+		return getEntities(x0, y0, x1, y1, new EntityIntersectsBBAndInstanceOf(
+				c));
 	}
 
-	public Set<Entity> getEntities(double xx0, double yy0, double xx1, double yy1, BBPredicate<Entity> predicate) {
+	public Set<Entity> getEntities(double xx0, double yy0, double xx1,
+			double yy1, BBPredicate<Entity> predicate) {
 		final int x0 = Math.max((int) (xx0) / Tile.WIDTH, 0);
 		final int x1 = Math.min((int) (xx1) / Tile.WIDTH, width - 1);
 		final int y0 = Math.max((int) (yy0) / Tile.HEIGHT, 0);
@@ -282,9 +283,11 @@ public class Level {
 		return result;
 	}
 
-	public Set<Entity> getEntitiesSlower(double xx0, double yy0, double xx1, double yy1, Class<? extends Entity> c) {
+	public Set<Entity> getEntitiesSlower(double xx0, double yy0, double xx1,
+			double yy1, Class<? extends Entity> c) {
 		final Set<Entity> result = new TreeSet<Entity>(new EntityComparator());
-		final BBPredicate<Entity> predicate = new EntityIntersectsBBAndInstanceOf(c);
+		final BBPredicate<Entity> predicate = new EntityIntersectsBBAndInstanceOf(
+				c);
 
 		for (Entity e : this.entities) {
 			if (predicate.appliesTo(e, xx0, yy0, xx1, yy1)) {
@@ -303,7 +306,8 @@ public class Level {
 
 	public void addMob(Mob m, int xTile, int yTile) {
 		updateDensityList();
-		if (monsterDensity[(int) (xTile / densityTileWidth)][(int) (yTile / densityTileHeight)] < TitleMenu.difficulty.getAllowedMobDensity()) {
+		if (monsterDensity[(int) (xTile / densityTileWidth)][(int) (yTile / densityTileHeight)] < Options.difficulty
+				.getAllowedMobDensity()) {
 			addEntity(m);
 		}
 	}
@@ -315,16 +319,19 @@ public class Level {
 	public void updateDensityList() {
 		for (int x = 0; x < monsterDensity.length; x++) {
 			for (int y = 0; y < monsterDensity[x].length; y++) {
-				int entityNumb = getEntities(x * densityTileWidth * Tile.WIDTH, y * densityTileHeight * Tile.HEIGHT, x * (densityTileWidth + 1) * Tile.WIDTH, y * (densityTileHeight + 1) * Tile.HEIGHT).size();
+				int entityNumb = getEntities(x * densityTileWidth * Tile.WIDTH,
+						y * densityTileHeight * Tile.HEIGHT,
+						x * (densityTileWidth + 1) * Tile.WIDTH,
+						y * (densityTileHeight + 1) * Tile.HEIGHT).size();
 				monsterDensity[x][y] = entityNumb;
 			}
 		}
 	}
 
 	public void tick() {
-		for (int i = 0; i < tickItems.size(); i++) {
-			tickItems.get(i).tick(this);
-		}
+		// for (int i = 0; i < tickItems.size(); i++) {
+		// tickItems.get(i).tick(this);
+		// }
 
 		for (int i = 0; i < entities.size(); i++) {
 			Entity e = entities.get(i);
@@ -343,13 +350,14 @@ public class Level {
 				removeFromEntityMap(e);
 			}
 		}
-		if (victoryConditions != null) {
-			victoryConditions.updateVictoryConditions(this);
-		}
+		// TODO: add check for win state
 	}
 
 	private boolean hasSeen(int x, int y) {
-		return getSeen()[x + y * (width + 1)] || getSeen()[(x + 1) + y * (width + 1)] || getSeen()[x + (y + 1) * (width + 1)] || getSeen()[(x + 1) + (y + 1) * (width + 1)];
+		return getSeen()[x + y * (width + 1)]
+				|| getSeen()[(x + 1) + y * (width + 1)]
+				|| getSeen()[x + (y + 1) * (width + 1)]
+				|| getSeen()[(x + 1) + (y + 1) * (width + 1)];
 	}
 
 	public void render(Screen screen, int xScroll, int yScroll) {
@@ -364,7 +372,9 @@ public class Level {
 			y0--;
 		}
 
-		Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll - Tile.HEIGHT, xScroll + screen.getWidth() + Tile.WIDTH, yScroll + screen.getHeight() + Tile.HEIGHT);
+		Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll
+				- Tile.HEIGHT, xScroll + screen.getWidth() + Tile.WIDTH,
+				yScroll + screen.getHeight() + Tile.HEIGHT);
 
 		screen.setOffset(-xScroll, -yScroll);
 
@@ -377,13 +387,11 @@ public class Level {
 		}
 
 		renderTopOfWalls(screen, x0, y0, x1, y1);
-		// renderDarkness(screen, x0, y0, x1, y1);
 
 		screen.setOffset(0, 0);
 
-		// updateMinimap();
-		// renderPanelAndMinimap(screen, x0, y0);
-		renderPlayerScores(screen);
+		updateMinimap();
+		renderPanelAndMinimap(screen, x0, y0);
 	}
 
 	private void renderTiles(Screen screen, int x0, int y0, int x1, int y1) {
@@ -393,7 +401,8 @@ public class Level {
 
 				// draw sand outside the level
 				if (x < 0 || x >= width || y < 0 || y >= height) {
-					screen.blit(Art.floorTiles[5][0], x * Tile.WIDTH, y * Tile.HEIGHT);
+					screen.draw(Art.floorTiles[5][0], x * Tile.WIDTH, y
+							* Tile.HEIGHT);
 					continue;
 				}
 
@@ -404,15 +413,6 @@ public class Level {
 
 				}
 			}
-		}
-	}
-
-	private GameCharacter getPlayerCharacter(int playerID) {
-		Player player = MojamComponent.instance.players[playerID];
-		if (player == null) {
-			return GameCharacter.None;
-		} else {
-			return player.getCharacter();
 		}
 	}
 
@@ -431,129 +431,143 @@ public class Level {
 		}
 	}
 
-	/*
-	 * private void renderDarkness(Screen screen, int x0, int y0, int x1, int
-	 * y1){ for (int y = y0; y <= y1; y++) { if (y < 0 || y >= height) {
-	 * continue; } for (int x = x0; x <= x1; x++) { if (x < 0 || x >= width) {
-	 * continue; } boolean c0 = !getSeen()[x + y * (width + 1)]; boolean c1 =
-	 * !getSeen()[(x + 1) + y * (width + 1)]; boolean c2 = !getSeen()[x + (y +
-	 * 1) * (width + 1)]; boolean c3 = !getSeen()[(x + 1) + (y + 1) * (width +
-	 * 1)];
-	 * 
-	 * if (!(c0 || c1 || c2 || c3)) { continue; }
-	 * 
-	 * int count = 0; if (c0) { count++; } if (c1) { count++; } if (c2) {
-	 * count++; } if (c3) { count++; } int yo = -16;
-	 * 
-	 * if (count == 4) { screen.blit(Art.darkness[1][1], x * Tile.WIDTH, y
-	 * Tile.WIDTH + yo); } else if (count == 3) { if (!c0) {
-	 * screen.blit(Art.darkness[1][4], x * Tile.WIDTH, y Tile.WIDTH + yo); } if
-	 * (!c1) { screen.blit(Art.darkness[0][4], x * Tile.WIDTH, y Tile.WIDTH +
-	 * yo); } if (!c2) { screen.blit(Art.darkness[1][3], x * Tile.WIDTH, y
-	 * Tile.WIDTH + yo); } if (!c3) { screen.blit(Art.darkness[0][3], x *
-	 * Tile.WIDTH, y Tile.WIDTH + yo); } } else if (count == 1) { if (c0) {
-	 * screen.blit(Art.darkness[2][2], x * Tile.WIDTH, y Tile.WIDTH + yo); } if
-	 * (c1) { screen.blit(Art.darkness[0][2], x * Tile.WIDTH, y Tile.WIDTH +
-	 * yo); } if (c2) { screen.blit(Art.darkness[2][0], x * Tile.WIDTH, y
-	 * Tile.WIDTH + yo); } if (c3) { screen.blit(Art.darkness[0][0], x *
-	 * Tile.WIDTH, y Tile.WIDTH + yo); } } else { if (c0 && c3) {
-	 * screen.blit(Art.darkness[2][4], x * Tile.WIDTH, y Tile.WIDTH + yo); } if
-	 * (c1 && c2) { screen.blit(Art.darkness[2][3], x * Tile.WIDTH, y Tile.WIDTH
-	 * + yo); } if (c0 && c1) { screen.blit(Art.darkness[1][2], x * Tile.WIDTH,
-	 * y Tile.WIDTH + yo); } if (c2 && c3) { screen.blit(Art.darkness[1][0], x *
-	 * Tile.WIDTH, y Tile.WIDTH + yo); } if (c0 && c2) {
-	 * screen.blit(Art.darkness[2][1], x * Tile.WIDTH, y Tile.WIDTH + yo); } if
-	 * (c1 && c3) { screen.blit(Art.darkness[0][1], x * Tile.WIDTH, y Tile.WIDTH
-	 * + yo); } } } } }
-	 * 
-	 * private void updateMinimap(){ for (int y = 0; y < height; y++) { for (int
-	 * x = 0; x < width; x++) { int i = x + y * width; if (hasSeen(x, y)) {
-	 * minimap.setPixel(i, getTile(x, y).minimapColor); } else {
-	 * minimap.setPixel(i, 0xff000000); } } }
-	 * 
-	 * addIconsToMinimap(); }
-	 * 
-	 * private void addIconsToMinimap() { for (int i = 0; i < entities.size();
-	 * i++) { Entity e = entities.get(i); if (!e.removed) { if (e.minimapIcon >=
-	 * 0) { int x = (int) (e.pos.x / Tile.WIDTH); int y = (int) (e.pos.y /
-	 * Tile.WIDTH); if (x >= 0 && y >= 0 && x < width && y < height) { if
-	 * (hasSeen(x, y)) { minimap.blit(Art.mapIcons[e.minimapIcon %
-	 * 4][e.minimapIcon / 4], x - 2, y - 2); } } } } } }
-	 * 
-	 * private void renderPanelAndMinimap(Screen screen, int x0, int y0){ Bitmap
-	 * displaymap = new Bitmap(64, 64);
-	 * 
-	 * if (largeMap) { displaymap = calculateLargeMapDisplay(x0, y0); } else if
-	 * (smallMap) { displaymap = calculateSmallMapDisplay(); } else { displaymap
-	 * = minimap; }
-	 * 
-	 * screen.draw(Art.panel, 0, screen.getHeight() - 80);
-	 * screen.draw(displaymap, 429, screen.getHeight() - 80 + 5); }
-	 * 
-	 * private Bitmap calculateLargeMapDisplay(int x0, int y0) {
-	 * 
-	 * Bitmap largeMap = new Bitmap(64, 64); int locx = x0 + 8; int locy = y0 +
-	 * 8;
-	 * 
-	 * int drawx = 0, drawy = 0; int donex = 0, doney = 0; int diffx = 0, diffy
-	 * = 0;
-	 * 
-	 * if (width < 64) { diffx = (64 - width) / 2; } if (height < 64) { diffy =
-	 * (64 - height) / 2; }
-	 * 
-	 * if (locx < 32 || width < 64) { drawx = 0; } else if (locx > (width - 32))
-	 * { drawx = width - 64; } else { drawx = locx - 32; }
-	 * 
-	 * if (locy < 32 || height < 64) { drawy = 0; } else if (locy > (height -
-	 * 32)) { drawy = height - 64; } else { drawy = locy - 32; }
-	 * 
-	 * for (int y = 0; y < 64; y++) { if(y < diffy || y >= (64 - diffy)) { for
-	 * (int x = 0; x < 64; x++) { largeMap.setPixel(x + (y * 64),
-	 * Art.floorTileColors[5 & 7][5 / 8]); } } else{ for (int x = 0; x < 64;
-	 * x++) { if (x < diffx || x > (64 - diffx)) { largeMap.setPixel(x + (y *
-	 * 64), Art.floorTileColors[5 & 7][5 / 8]); } else { if (((drawx + donex) +
-	 * (drawy + doney) * width) < minimap.getPixelSize() -1) {
-	 * largeMap.setPixel(x + (y * 64), minimap.getPixel((drawx + donex) + (drawy
-	 * + doney) * width)); } donex++; } } donex = 0; doney++; } }
-	 * 
-	 * return largeMap; }
-	 * 
-	 * private Bitmap calculateSmallMapDisplay() {
-	 * 
-	 * Bitmap smallMap = new Bitmap(64, 64); int smallx = 0, smally = 0; for
-	 * (int y = 0; y < 64; y++) { for (int x = 0; x < 64; x++) { if (x >= (32 -
-	 * width/2) && x <= (32 + width/2) && y >= (32 - height/2) && y < (32 +
-	 * height/2) - 1) { smallMap.setPixel(x + y * 64, minimap.getPixel(smallx +
-	 * smally * width)); smallx++; } else smallMap.setPixel(x + y * 64,
-	 * Art.floorTileColors[5 & 7][5 / 8]); } smallx = 0;
-	 * 
-	 * if (y >= (32 - height/2) && y < (32 + height/2) - 1) { smally++; } }
-	 * return smallMap; }
-	 */
-
-	private void renderPlayerScores(Screen screen) {
-
-		String player1score = MojamComponent.texts.scoreCharacter(getPlayerCharacter(0), player1Score * 100 / TARGET_SCORE);
-		Font.defaultFont().draw(screen, player1score, 280 - player1score.length() * 10, screen.getHeight() - 20); // adjust
-																													// so
-																													// it
-																													// fits
-																													// in
-																													// the
-																													// box
-		screen.blit(Art.getPlayer(getPlayerCharacter(0))[0][2], 262, screen.getHeight() - 42);
-
-		if (MojamComponent.instance.players[1] != null && getPlayerCharacter(1) != GameCharacter.None) {
-			Font.defaultFont().draw(screen, MojamComponent.texts.scoreCharacter(getPlayerCharacter(1), player2Score * 100 / TARGET_SCORE), 56, screen.getHeight() - 36);
-			screen.blit(Art.getPlayer(getPlayerCharacter(1))[0][6], 19, screen.getHeight() - 42);
+	private void updateMinimap() {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int i = x + y * width;
+				if (hasSeen(x, y)) {
+					minimap.setPixel(i, getTile(x, y).minimapColor);
+				} else {
+					minimap.setPixel(i, 0xff000000);
+				}
+			}
 		}
+
+		addIconsToMinimap();
+	}
+
+	private void addIconsToMinimap() {
+		for (int i = 0; i < entities.size(); i++) {
+			Entity e = entities.get(i);
+			if (!e.removed) {
+				if (e.minimapIcon >= 0) {
+					int x = (int) (e.pos.x / Tile.WIDTH);
+					int y = (int) (e.pos.y / Tile.WIDTH);
+					if (x >= 0 && y >= 0 && x < width && y < height) {
+						if (hasSeen(x, y)) {
+							minimap.draw(Art.mapIcons[e.minimapIcon % 4][e.minimapIcon / 4], x - 2, y - 2);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void renderPanelAndMinimap(Screen screen, int x0, int y0) {
+		Bitmap displaymap = new Bitmap(64, 64);
+
+		if (largeMap) {
+			displaymap = calculateLargeMapDisplay(x0, y0);
+		} else if (smallMap) {
+			displaymap = calculateSmallMapDisplay();
+		} else {
+			displaymap = minimap;
+		}
+
+		screen.draw(Art.panel, 0, screen.getHeight() - 80);
+		screen.draw(displaymap, 429, screen.getHeight() - 80 + 5);
+	}
+
+	private Bitmap calculateLargeMapDisplay(int x0, int y0) {
+
+		Bitmap largeMap = new Bitmap(64, 64);
+		int locx = x0 + 8;
+		int locy = y0 + 8;
+
+		int drawx = 0, drawy = 0;
+		int donex = 0, doney = 0;
+		int diffx = 0, diffy = 0;
+
+		if (width < 64) {
+			diffx = (64 - width) / 2;
+		}
+		if (height < 64) {
+			diffy = (64 - height) / 2;
+		}
+
+		if (locx < 32 || width < 64) {
+			drawx = 0;
+		} else if (locx > (width - 32)) {
+			drawx = width - 64;
+		} else {
+			drawx = locx - 32;
+		}
+
+		if (locy < 32 || height < 64) {
+			drawy = 0;
+		} else if (locy > (height - 32)) {
+			drawy = height - 64;
+		} else {
+			drawy = locy - 32;
+		}
+
+		for (int y = 0; y < 64; y++) {
+			if (y < diffy || y >= (64 - diffy)) {
+				for (int x = 0; x < 64; x++) {
+					largeMap.setPixel(x + (y * 64), Art.floorTileColors[5 & 7][5 / 8]);
+				}
+			} else {
+				for (int x = 0; x < 64; x++) {
+					if (x < diffx || x > (64 - diffx)) {
+						largeMap.setPixel(x + (y * 64), Art.floorTileColors[5 & 7][5 / 8]);
+					} else {
+						if (((drawx + donex) + (drawy + doney) * width) < minimap.totalPixels() - 1) {
+							largeMap.setPixel(x + (y * 64), minimap.getPixel((drawx + donex) + (drawy + doney) * width));
+						}
+						donex++;
+					}
+				}
+				donex = 0;
+				doney++;
+			}
+		}
+
+		return largeMap;
+	}
+
+	private Bitmap calculateSmallMapDisplay() {
+
+		Bitmap smallMap = new Bitmap(64, 64);
+		int smallx = 0, smally = 0;
+		for (int y = 0; y < 64; y++) {
+			for (int x = 0; x < 64; x++) {
+				if (x >= (32 - width / 2) && x <= (32 + width / 2)
+						&& y >= (32 - height / 2) && y < (32 + height / 2) - 1) {
+					smallMap.setPixel(x + y * 64,
+							minimap.getPixel(smallx + smally * width));
+					smallx++;
+				} else
+					smallMap.setPixel(x + y * 64,
+							Art.floorTileColors[5 & 7][5 / 8]);
+			}
+			smallx = 0;
+			if (y >= (32 - height / 2) && y < (32 + height / 2) - 1) {
+				smally++;
+			}
+		}
+		return smallMap;
 	}
 
 	private boolean canSee(int x, int y) {
 		if (x < 0 || y < 1 || x >= width || y >= height) {
 			return true;
 		}
-		return getSeen()[x + (y - 1) * (width + 1)] || getSeen()[(x + 1) + (y - 1) * (width + 1)] || getSeen()[x + y * (width + 1)] || getSeen()[(x + 1) + y * (width + 1)] || getSeen()[x + (y + 1) * (width + 1)] || getSeen()[(x + 1) + (y + 1) * (width + 1)];
+		return getSeen()[x + (y - 1) * (width + 1)]
+				|| getSeen()[(x + 1) + (y - 1) * (width + 1)]
+				|| getSeen()[x + y * (width + 1)]
+				|| getSeen()[(x + 1) + y * (width + 1)]
+				|| getSeen()[x + (y + 1) * (width + 1)]
+				|| getSeen()[(x + 1) + (y + 1) * (width + 1)];
 	}
 
 	public List<BB> getClipBBs(Entity e) {
@@ -567,8 +581,10 @@ public class Level {
 
 		result.add(new BB(null, 0, 0, 0, height * Tile.HEIGHT));
 		result.add(new BB(null, 0, 0, width * Tile.WIDTH, 0));
-		result.add(new BB(null, width * Tile.WIDTH, 0, width * Tile.WIDTH, height * Tile.HEIGHT));
-		result.add(new BB(null, 0, height * Tile.HEIGHT, width * Tile.WIDTH, height * Tile.HEIGHT));
+		result.add(new BB(null, width * Tile.WIDTH, 0, width * Tile.WIDTH,
+				height * Tile.HEIGHT));
+		result.add(new BB(null, 0, height * Tile.HEIGHT, width * Tile.WIDTH,
+				height * Tile.HEIGHT));
 
 		for (int y = y0; y <= y1; y++) {
 			if (y < 0 || y >= height) {

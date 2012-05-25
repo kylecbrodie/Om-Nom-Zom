@@ -30,6 +30,7 @@ public class Game extends Canvas implements Runnable {
 
 	private Screen screen = new Screen(GAME_WIDTH,GAME_HEIGHT);
 	private Keys keys = new Keys();
+	//private MouseButtons mouse = new MouseButtons();
 	private Level level;
 	public static Object soundPlayer;
 	
@@ -37,8 +38,8 @@ public class Game extends Canvas implements Runnable {
 	
 	private void init() {
             running = true;
-            level = new Level(this);
-            level.add(new Player(keys));
+            level = new Level(GAME_WIDTH,GAME_HEIGHT);
+            level.addEntity(new TestEntity());
             
             createBufferStrategy(2);
             requestFocus();
@@ -91,7 +92,7 @@ public class Game extends Canvas implements Runnable {
 		if (!hasFocus()) {
 			keys.release();
 		} else {
-			if (!level.player.removed) totalGameTicks++;
+			totalGameTicks++;
 
 			keys.tick();
 			level.tick();
@@ -101,21 +102,21 @@ public class Game extends Canvas implements Runnable {
 	private static boolean drewPaused = false;
 	
 	private void render(Graphics g) {
-            if(!this.hasFocus()) {
-                if(!drewPaused) {
-                    g.drawString("PAUSED!", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
-                    drewPaused = true;
+		if (!this.hasFocus()) {
+			if (!drewPaused) {
+				g.drawString("PAUSED!", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
+				drewPaused = true;
+			}
+			return;
 		}
-		return;
-            }
-            drewPaused = false;
-		
-            level.render(screen);
-            
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, getWidth(), getHeight());
-            
-            g.drawImage(screen.image, 0, 0, GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE, null);
+		drewPaused = false;
+
+		level.render(screen, 0, 0);
+
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, getWidth(), getHeight());
+
+		g.drawImage(screen.image, 0, 0, GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE, null);
 	}
 	
 	public Game() {
@@ -184,6 +185,6 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public static String getOS() {
-		return System.getProperty("os.name").toLowerCase();;
+		return System.getProperty("os.name").toLowerCase();
 	}
 }

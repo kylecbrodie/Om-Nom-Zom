@@ -103,7 +103,6 @@ public class InputHandler implements KeyListener {
 		}
 		if (key != null) {
 			key.nextState = state;
-			ModSystem.keyEvent(key, state);
 		}
 	}
 }

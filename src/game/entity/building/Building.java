@@ -67,7 +67,7 @@ public abstract class Building extends Mob implements Usable {
 	public void tick() {
 		super.tick();
 		if (carriedBy == null) {
-			fallDownHole();
+			//fallDownHole(); TODO: allow for falling? idk yet
 		}
 		xd = 0.0;
 		yd = 0.0;
@@ -128,7 +128,7 @@ public abstract class Building extends Mob implements Usable {
 	protected void upgradeComplete() {
 	}
 
-	@Override
+	/*@Override
 	public boolean upgrade(Player p) {
 		if (upgradeLevel >= maxUpgradeLevel) {
 			Game.soundPlayer.playSound("/sound/Fail.wav", (float) pos.x, (float) pos.y, true);
@@ -157,7 +157,7 @@ public abstract class Building extends Mob implements Usable {
 			Notifications.getInstance().add(Game.texts.upgradeTo(upgradeLevel + 1));
 		}
 		return true;
-	}
+	}*/
 
 	/**
 	 * Make this building upgradeable

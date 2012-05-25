@@ -36,6 +36,10 @@ public class Art {
 	public static Bitmap[][] particles;
 	public static Bitmap[][] shineBig;
 	
+	//icons
+	public static Bitmap[][] mapIcons;
+	public static Bitmap panel;
+	
 	/**
 	 * Return the bitmaps for a given piece of art, cut out from a sheet
 	 * 
