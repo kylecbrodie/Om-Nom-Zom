@@ -24,24 +24,24 @@ public class Screen extends Bitmap {
 		draw(bm, (int) x, (int) y);
 	}
 
-	public void draw(Bitmap bitmap, int x, int y) {
-		super.draw(bitmap, x + xOffset, y + yOffset);
+	public void draw(Bitmap bm, int x, int y) {
+		super.draw(bm, x + xOffset, y + yOffset);
 	}
 
-	public void draw(Bitmap bitmap, int x, int y, int w, int h) {
-		super.draw(bitmap, x + xOffset, y + yOffset, w, h);
+	public void draw(Bitmap bm, int x, int y, int w, int h) {
+		super.draw(bm, x + xOffset, y + yOffset, w, h);
 	}
 
-	public void drawAlpha(Bitmap bitmap, int x, int y, int alpha) {
-		super.drawAlpha(bitmap, x + xOffset, y + yOffset, alpha);
+	public void drawAlpha(Bitmap bm, int x, int y, int alpha) {
+		super.drawAlpha(bm, x + xOffset, y + yOffset, alpha);
 	}
 
-	public void drawColor(Bitmap bitmap, double x, double y, int color) {
-		drawColor(bitmap, (int) x, (int) y, color);
+	public void drawColor(Bitmap bm, double x, double y, int color) {
+		drawColor(bm, (int) x, (int) y, color);
 	}
 
-	public void drawColor(Bitmap bitmap, int x, int y, int color) {
-		super.drawColor(bitmap, x + xOffset, y + yOffset, color);
+	public void drawColor(Bitmap bm, int x, int y, int color) {
+		super.drawColor(bm, x + xOffset, y + yOffset, color);
 	}
 
 	public void fill(int x, int y, int width, int height, int color) {
@@ -56,13 +56,6 @@ public class Screen extends Bitmap {
 		Bitmap rect = new Bitmap(x2, y2);
 		rect.drawRect(x, y, x2, y2, color);
 		return rect;
-	}
-
-	public Bitmap rangeBitmap(int radius, int color) {
-		Bitmap circle = new Bitmap(radius * 2 + 100, radius * 2 + 100);
-
-		circle.fillCircle(radius, radius, radius, color);
-		return circle;
 	}
 
 	public Bitmap tooltipBitmap(int width, int height) {

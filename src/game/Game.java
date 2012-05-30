@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
 
 import game.level.*;
-import game.entity.*;
+import game.entity.mob.TestEntity;
 import game.gfx.Screen;
 
 public class Game extends Canvas implements Runnable {
@@ -38,8 +38,8 @@ public class Game extends Canvas implements Runnable {
 	
 	private void init() {
             running = true;
-            level = new Level(GAME_WIDTH,GAME_HEIGHT);
-            level.addEntity(new TestEntity());
+            level = new Level(100,100);
+            level.addEntity(new TestEntity(10, 10));
             
             createBufferStrategy(2);
             requestFocus();

@@ -70,19 +70,19 @@ public class Bitmap{
 		return pixels.length;
 	}
 	
-	private void adjustBlitArea(Rect blitArea) {
+	private void adjustDrawArea(Rect drawArea) {
 
-		if (blitArea.topLeftX < 0) {
-			blitArea.topLeftX = 0;
+		if (drawArea.topLeftX < 0) {
+			drawArea.topLeftX = 0;
 		}
-		if (blitArea.topLeftY < 0) {
-			blitArea.topLeftY = 0;
+		if (drawArea.topLeftY < 0) {
+			drawArea.topLeftY = 0;
 		}
-		if (blitArea.bottomRightX > w) {
-			blitArea.bottomRightX = w;
+		if (drawArea.bottomRightX > w) {
+			drawArea.bottomRightX = w;
 		}
-		if (blitArea.bottomRightY > h) {
-			blitArea.bottomRightY = h;
+		if (drawArea.bottomRightY > h) {
+			drawArea.bottomRightY = h;
 		}
 	}
 
@@ -108,15 +108,15 @@ public class Bitmap{
 	}
 
 	public void draw(Bitmap bm, int x, int y) {
-		Rect blitArea = new Rect(x, y, bm.w, bm.h);
-		adjustBlitArea(blitArea);
-		int blitWidth = blitArea.bottomRightX - blitArea.topLeftX;
+		Rect drawArea = new Rect(x, y, bm.w, bm.h);
+		adjustDrawArea(drawArea);
+		int drawWidth = drawArea.bottomRightX - drawArea.topLeftX;
 
-		for (int yy = blitArea.topLeftY; yy < blitArea.bottomRightY; yy++) {
-			int tp = yy * w + blitArea.topLeftX;
-			int sp = (yy - y) * bm.w + (blitArea.topLeftX - x);
+		for (int yy = drawArea.topLeftY; yy < drawArea.bottomRightY; yy++) {
+			int tp = yy * w + drawArea.topLeftX;
+			int sp = (yy - y) * bm.w + (drawArea.topLeftX - x);
 			tp -= sp;
-			for (int xx = sp; xx < sp + blitWidth; xx++) {
+			for (int xx = sp; xx < sp + drawWidth; xx++) {
 				int col = bm.pixels[xx];
 				int alpha = (col >> 24) & 0xff;
 
@@ -130,15 +130,15 @@ public class Bitmap{
 	}
 
 	public void draw(Bitmap bm, int x, int y, int width, int height) {
-		Rect blitArea = new Rect(x, y, width, height);
-		adjustBlitArea(blitArea);
-		int blitWidth = blitArea.bottomRightX - blitArea.topLeftX;
+		Rect drawArea = new Rect(x, y, width, height);
+		adjustDrawArea(drawArea);
+		int drawWidth = drawArea.bottomRightX - drawArea.topLeftX;
 
-		for (int yy = blitArea.topLeftY; yy < blitArea.bottomRightY; yy++) {
-			int tp = yy * w + blitArea.topLeftX;
-			int sp = (yy - y) * bm.w + (blitArea.topLeftX - x);
+		for (int yy = drawArea.topLeftY; yy < drawArea.bottomRightY; yy++) {
+			int tp = yy * w + drawArea.topLeftX;
+			int sp = (yy - y) * bm.w + (drawArea.topLeftX - x);
 			tp -= sp;
-			for (int xx = sp; xx < sp + blitWidth; xx++) {
+			for (int xx = sp; xx < sp + drawWidth; xx++) {
 				int col = bm.pixels[xx];
 				int alpha = (col >> 24) & 0xff;
 
@@ -157,15 +157,15 @@ public class Bitmap{
 			return;
 		}
 
-		Rect blitArea = new Rect(x, y, bm.w, bm.h);
-		adjustBlitArea(blitArea);
+		Rect drawArea = new Rect(x, y, bm.w, bm.h);
+		adjustDrawArea(drawArea);
 
-		int blitWidth = blitArea.bottomRightX - blitArea.topLeftX;
+		int drawWidth = drawArea.bottomRightX - drawArea.topLeftX;
 
-		for (int yy = blitArea.topLeftY; yy < blitArea.bottomRightY; yy++) {
-			int tp = yy * w + blitArea.topLeftX;
-			int sp = (yy - y) * bm.w + (blitArea.topLeftX - x);
-			for (int xx = 0; xx < blitWidth; xx++) {
+		for (int yy = drawArea.topLeftY; yy < drawArea.bottomRightY; yy++) {
+			int tp = yy * w + drawArea.topLeftX;
+			int sp = (yy - y) * bm.w + (drawArea.topLeftX - x);
+			for (int xx = 0; xx < drawWidth; xx++) {
 				int col = bm.pixels[sp + xx];
 				if (col < 0) {
 
@@ -181,10 +181,10 @@ public class Bitmap{
 	}
 
 	public void drawColor(Bitmap bm, int x, int y, int color) {
-		Rect blitArea = new Rect(x, y, bm.w, bm.h);
-		adjustBlitArea(blitArea);
+		Rect drawArea = new Rect(x, y, bm.w, bm.h);
+		adjustDrawArea(drawArea);
 
-		int blitWidth = blitArea.bottomRightX - blitArea.topLeftX;
+		int drawWidth = drawArea.bottomRightX - drawArea.topLeftX;
 
 		int a2 = (color >> 24) & 0xff;
 		int a1 = 256 - a2;
@@ -193,10 +193,10 @@ public class Bitmap{
 		int gg = color & 0xff00;
 		int bb = color & 0xff;
 
-		for (int yy = blitArea.topLeftY; yy < blitArea.bottomRightY; yy++) {
-			int tp = yy * w + blitArea.topLeftX;
-			int sp = (yy - y) * bm.w + (blitArea.topLeftX - x);
-			for (int xx = 0; xx < blitWidth; xx++) {
+		for (int yy = drawArea.topLeftY; yy < drawArea.bottomRightY; yy++) {
+			int tp = yy * w + drawArea.topLeftX;
+			int sp = (yy - y) * bm.w + (drawArea.topLeftX - x);
+			for (int xx = 0; xx < drawWidth; xx++) {
 				int col = bm.pixels[sp + xx];
 				if (col < 0) {
 					int r = (col & 0xff0000);
@@ -214,14 +214,14 @@ public class Bitmap{
 	
 	public void fill(int x, int y, int width, int height, int color) {
 
-		Rect blitArea = new Rect(x, y, width, height);
-		adjustBlitArea(blitArea);
+		Rect drawArea = new Rect(x, y, width, height);
+		adjustDrawArea(drawArea);
 
-		int blitWidth = blitArea.bottomRightX - blitArea.topLeftX;
+		int drawWidth = drawArea.bottomRightX - drawArea.topLeftX;
 
-		for (int yy = blitArea.topLeftY; yy < blitArea.bottomRightY; yy++) {
-			int tp = yy * w + blitArea.topLeftX;
-			for (int xx = 0; xx < blitWidth; xx++) {
+		for (int yy = drawArea.topLeftY; yy < drawArea.bottomRightY; yy++) {
+			int tp = yy * w + drawArea.topLeftX;
+			for (int xx = 0; xx < drawWidth; xx++) {
 				pixels[tp + xx] = color;
 			}
 		}

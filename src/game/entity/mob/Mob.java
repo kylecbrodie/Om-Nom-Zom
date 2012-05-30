@@ -3,8 +3,6 @@ package game.entity.mob;
 import game.Game;
 import game.Options;
 import game.entity.Entity;
-import game.entity.Player;
-import game.entity.animation.ItemFallAnimation;
 import game.entity.building.Building;
 import game.level.tile.Tile;
 import game.math.BB;
@@ -13,6 +11,12 @@ import game.gfx.Art;
 import game.gfx.Bitmap;
 import game.gfx.Screen;
 
+/**
+ * Class representing 'thinking' entities. 'Thinking' is AI above the very
+ * primitive. Most common subclasses would be Players, Animals, Monsters.
+ * 
+ * @author Kyle Brodie
+ */
 public abstract class Mob extends Entity {
 
 	public final static double CARRYSPEEDMOD = 1.2;
@@ -30,7 +34,6 @@ public abstract class Mob extends Entity {
 	public float health = maxHealth;
 	public boolean isImmortal = false;
 	public double xBump, yBump;
-	public Building carrying = null;
 	public int yOffs = 8;
 	public double xSlide;
 	public double ySlide;
@@ -59,16 +62,12 @@ public abstract class Mob extends Entity {
 		aimVector = new Vec2(0, 1);
 	}
 
-	public void init() {
-		super.init();
-	}
-
 	public void setStartHealth(float newHealth) {
 		maxHealth = health = newHealth;
 	}
 
 	public double getSpeed() {
-		return carrying != null ? speed * CARRYSPEEDMOD : speed;
+		return speed;
 	}
 
 	public void deltaMove(Vec2 v) {
@@ -80,17 +79,11 @@ public abstract class Mob extends Entity {
 	}
 
 	public boolean isEnemyOf(Mob m) {
-		if (team == Team.Neutral || m.team == Team.Neutral)
-			return false;
-		return team != m.team;
-	}
-
-	public boolean isNotFriendOf(Mob m) {
 		return team != m.team;
 	}
 
 	public void tick() {
-		if (Options.difficulty.isMobRegenerationAllowed() || this.team != Team.Neutral) {
+		if (Options.difficulty.isMobRegenerationAllowed()) {
 			this.doRegenTime();
 		}
 		
@@ -246,7 +239,7 @@ public abstract class Mob extends Entity {
 		}
 	}
 	
-	/*protected void addHealthBar(Screen screen) {
+	/*protected void addHealthBar(Screen s) {
         
         int start = (int) (health * 21 / maxHealth);
         
@@ -267,19 +260,10 @@ public abstract class Mob extends Entity {
 			color = 0x8af116;
 		}
 
-		screen.draw(Art.healthBar_Underlay[0][0], pos.x - 16, pos.y + healthBarOffset);
-		screen.drawColor(Art.healthBar[start][0], pos.x - 16, pos.y + healthBarOffset, (0xff << 24) + color);
-		screen.draw(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
+		s.draw(Art.healthBar_Underlay[0][0], pos.x - 16, pos.y + healthBarOffset);
+		s.drawColor(Art.healthBar[start][0], pos.x - 16, pos.y + healthBarOffset, (0xff << 24) + color);
+		s.draw(Art.healthBar_Outline[0][0], pos.x - 16, pos.y + healthBarOffset);
     }*/
-
-	protected void renderCarrying(Screen screen, int yOffs) {
-		if (carrying == null)
-			return;
-
-		carrying.yOffs -= yOffs;
-		carrying.render(screen);
-		carrying.yOffs += yOffs;
-	}
 
 	public abstract Bitmap getSprite();
 
@@ -333,28 +317,6 @@ public abstract class Mob extends Entity {
 
 	public int getDeathPoints() {
 		return deathPoints;
-	}
-
-	public void pickup(Building b) {
-        if (b.health > 0) {
-            level.removeEntity(b);
-            carrying = b;
-            carrying.onPickup(this);
-        }
-	}
-	
-	public void drop() {
-        carrying.removed = false;
-        carrying.freezeTime = 10;
-        carrying.justDroppedTicks=80;
-        carrying.setPos(pos);
-        level.addEntity(carrying);
-        carrying.onDrop();
-        carrying = null;
-	}
-
-	public boolean isCarrying() {
-		return (this.carrying != null);
 	}
     
     public boolean isTargetBehindWall(double dx2, double dy2, Entity e) {

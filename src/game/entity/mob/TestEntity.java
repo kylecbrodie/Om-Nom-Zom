@@ -6,7 +6,7 @@ import game.gfx.Bitmap;
 public class TestEntity extends Mob {
 
 	public TestEntity(double x, double y) {
-		super(x, y, Team.Neutral);
+		super(x, y,Team.Zombie);
 		setPos(x, y);
 		setStartHealth(1);
 		dir = random.nextDouble() * Math.PI * 2;
@@ -20,8 +20,8 @@ public class TestEntity extends Mob {
 			return;
 
 		dir += (random.nextDouble() - random.nextDouble()) * 0.2;
-		xd += Math.cos(dir) * 1;
-		yd += Math.sin(dir) * 1;
+		xd += Math.cos(dir);
+		yd += Math.sin(dir);
 		if (!move(xd, yd)) {
 			dir += (random.nextDouble() - random.nextDouble()) * 0.8;
 		}
@@ -36,6 +36,6 @@ public class TestEntity extends Mob {
 	public Bitmap getSprite() {
 		int facing = (int) ((Math.atan2(xd, -yd) * 4 / (Math.PI * 2) + 2.5)) & 3;
 
-		return Art.entityFillerMoving[facing][0];
+		return Art.entityFillerAni[facing][0];
 	}
 }

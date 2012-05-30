@@ -1,9 +1,15 @@
 package game.math;
 
-public class BB {
-	public double x0, y0;
-	public double x1, y1;
-	public BBOwner owner;
+/**
+ * Bounding Box class to handle collision detection
+ * 
+ * @author Kyle Brodie
+ *
+ */
+public final class BB {
+	public final double x0, y0;
+	public final double x1, y1;
+	public final BBOwner owner;
 
 	public BB(BBOwner owner, double x0, double y0, double x1, double y1) {
 		this.owner = owner;

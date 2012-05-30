@@ -14,8 +14,10 @@ import game.gfx.Screen;
 public abstract class Entity implements BBOwner {
 
 	protected Random random = new Random();
+	
 	public Level level;
 	public boolean removed;
+	
 	public Vec2 pos = new Vec2(0, 0);
 	public Vec2 radius = new Vec2(10, 10);
 
@@ -25,49 +27,35 @@ public abstract class Entity implements BBOwner {
 	public int xto;
 	public int yto;
 	public double xd, yd;
+	
 	public int minimapIcon = -1;
 	public int minimapColor = -1;
 	public int team;
-
-	private Entity spawnSource;
 
 	public void setPos(double x, double y) {
 		pos.set(x, y);
 	}
 	
 	public void setPos(Vec2 position) {
-	    pos.x = position.x;
-	    pos.y = position.y;
+		if(position != null) {
+			pos.x = position.x;
+	    	pos.y = position.y;
+		}
     }
 
 	public void setSize(int xr, int yr) {
 		radius.set(xr, yr);
 	}
 
-	public final void init(Level level) {
-		this.level = level;
+	public final void init(Level l) {
+		level = l;
 		init();
 	}
 
 	public void init() {
 	}
 
-	public void tick() {
-	}
-
-	public boolean intersects(double xx0, double yy0, double xx1, double yy1) {
-		return getBB().intersects(xx0, yy0, xx1, yy1);
-	}
-
-	public BB getBB() {
-		return new BB(this, pos.x - radius.x, pos.y - radius.y, pos.x + radius.x, pos.y + radius.y);
-	}
-
-	public void render(Screen screen) {
-		screen.draw(Art.entityFiller, pos.x - Tile.WIDTH / 2, pos.y - Tile.HEIGHT / 2 - 8);
-	}
-	
-	public void renderTop(Screen screen) {
+	public void tick(){
 	}
 	
 	protected boolean move(double xa, double ya) {
@@ -155,7 +143,14 @@ public abstract class Entity implements BBOwner {
 		}
 		return false;
 	}
-
+	
+	public void render(Screen s) {
+		s.draw(Art.entityFiller, pos.x - Tile.WIDTH / 2, pos.y - Tile.HEIGHT / 2 - 8);
+	}
+	
+	public void renderTop(Screen s) {
+	}
+	
 	public final boolean blocks(Entity e) {
 		return isBlocking && e.isBlocking && shouldBlock(e) && e.shouldBlock(this);
 	}
@@ -163,9 +158,13 @@ public abstract class Entity implements BBOwner {
 	protected boolean shouldBlock(Entity e) {
 		return true;
 	}
+	
+	public BB getBB() {
+		return new BB(this, pos.x - radius.x, pos.y - radius.y, pos.x + radius.x, pos.y + radius.y);
+	}
 
-	public void remove() {
-		removed = true;
+	public boolean intersects(double x0, double y0, double x1, double y1) {
+		return getBB().intersects(x0, y0, x1, y1);
 	}
 
 	@Override
@@ -177,6 +176,10 @@ public abstract class Entity implements BBOwner {
 	}
 
 	public void collide(Entity entity, double xa, double ya) {
+	}
+	
+	public void remove() {
+		removed = true;
 	}
 
 	public void hurt() {

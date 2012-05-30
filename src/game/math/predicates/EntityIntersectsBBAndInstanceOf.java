@@ -1,10 +1,9 @@
-package game.entity.predicates;
+package game.math.predicates;
 
 import java.util.Collection;
 import java.util.HashSet;
 
 import game.entity.Entity;
-import game.math.BBPredicate;
 
 /**
  * <p>

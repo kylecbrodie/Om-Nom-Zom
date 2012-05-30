@@ -1,28 +1,14 @@
 package game.level.tile;
 
-import game.gfx.Art;
-import game.gfx.Bitmap;
-import game.gfx.Screen;
 import game.level.Level;
 
 public class FloorTile extends Tile {
 
-	// Binary West|North|East
-	static final int[] shadowImages = new int[] { -1, // 000
-			3, // 001
-			5, // 010
-			6, // 011
-			2, // 100
-			0, // 101
-			4, // 110
-			1, // 111
-	};
 	public static final int COLOR = 0xffffffff;
 	public static final String NAME = "FLOOR";
 
 	public FloorTile() {
-		img = random.nextInt(4);
-		minimapColor = Art.floorTileColors[img & 7][img / 8];
+		super();
 	}
 	@Override
 	public void init(Level level, int x, int y) {
@@ -31,72 +17,30 @@ public class FloorTile extends Tile {
 	}
 
 	@Override
-	public void render(Screen screen) {
-		super.render(screen);
-	}
-
-	@Override
-	@SuppressWarnings("unused")
-	public void neighbourChanged(Tile tile) {
-	    
-		final Tile w = level.getTile(x - 1, y);
-		final Tile n = level.getTile(x, y - 1);
-		final Tile s = level.getTile(x, y + 1);
-		final Tile e = level.getTile(x + 1, y);
-		final Tile nw = level.getTile(x - 1, y - 1);
-		final Tile ne = level.getTile(x + 1, y - 1);
-		final Tile sw = level.getTile(x - 1, y + 1);
-		final Tile se = level.getTile(x + 1, y + 1);
-        
-        if (w != null && w.castShadow()){
-            this.isShadowed_west = true;
-        } else this.isShadowed_west = false;
-		if (n != null && n.castShadow()){
-		    this.isShadowed_north = true;
-		} else this.isShadowed_north = false;
-		if (e != null && e.castShadow()){
-		    this.isShadowed_east = true;
-		} else this.isShadowed_east = false;
-		if (ne != null && ne.castShadow() && e != null && !e.castShadow() && !this.isShadowed_north && !this.isShadowed_east){
-		    this.isShadowed_north_east = true;
-		} else this.isShadowed_north_east = false;
-		if (nw != null && nw.castShadow() && w != null && !w.castShadow() && !this.isShadowed_north && !this.isShadowed_west){
-            this.isShadowed_north_west = true;
-        } else this.isShadowed_north_west = false;
-		
-		minimapColor = Art.floorTileColors[img & 7][img / 8];
-	}
-
-	@Override
 	public boolean isBuildable() {
 		return true;
 	}
 	
-
 	@Override
-	public int getColor() {
+	public int getMapColor() {
 		return FloorTile.COLOR;
 	}
-
-
 	@Override
-	public String getName() {
-		return FloorTile.NAME;
-	}
-
-
-	@Override
-	public Bitmap getBitMapForEditor() {
-		return Art.floorTiles[0][0];
-	}
-
-	@Override
-	public int getMiniMapColor() {
+	public int getMinimapColor() {
 		return minimapColor;
 	}
 	
 	@Override
-	public void updateShadows(){
-        neighbourChanged(null);
-    }	
+	public int getTileWidth() {
+		return 1;
+	}
+	
+	@Override
+	public int getTileHeight() {
+		return 1;
+	}
+	@Override
+	public String getName() {
+		return FloorTile.NAME;
+	}
 }

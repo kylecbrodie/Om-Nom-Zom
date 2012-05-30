@@ -1,6 +1,5 @@
-package game.entity;
+package game.entity.mob;
 
-import game.entity.mob.Mob;
 import game.gfx.Bitmap;
 
 public class Player extends Mob {

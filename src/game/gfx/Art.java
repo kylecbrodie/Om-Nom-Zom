@@ -13,28 +13,19 @@ import javax.imageio.ImageIO;
 public class Art {
 	
 	//Mobs
-	public static Bitmap[][] zombieAni = cut("/art/mob/zombie.png", 32, 32);
-	public static Bitmap entityFiller = load("/art/entity/entityFiller.png");
-	public static Bitmap[][] entityFillerMoving = cut("/art/entity/entityFillerMoving.png", 32, 32);
+	public static Bitmap entityFiller = load("/art/entity/entity_static.png");
+	public static Bitmap[][] entityFillerAni = cut("/art/entity/entity_ani.png", 32, 32);
 	
 	//walls
-	public static Bitmap[][] wallTiles;
-	public static int[][] wallTileColors;
+	public static Bitmap wallTile = load("/art/tiles/wall.png");
+	public static int wallTileColor = getColour(wallTile);
 	
 	//floors
-	public static Bitmap[][] floorTiles;
-	public static int[][] floorTileColors;
-	
-	//shadows
-	public static Bitmap shadow_north;
-	public static Bitmap shadow_north_east;
-	public static Bitmap shadow_east;
-	public static Bitmap shadow_north_west;
-	public static Bitmap shadow_west;
+	public static Bitmap floorTile = load("/art/tiles/floor.png");;
+	public static int floorTileColor = getColour(floorTile);
 	
 	//Particles
 	public static Bitmap[][] particles;
-	public static Bitmap[][] shineBig;
 	
 	//icons
 	public static Bitmap[][] mapIcons;
@@ -137,17 +128,17 @@ public class Art {
 		return null;
 	}
 
-	private static int[][] getColors(Bitmap[][] tiles) {
+	private static int[][] getColours(Bitmap[][] tiles) {
 		int[][] result = new int[tiles.length][tiles[0].length];
 		for (int y = 0; y < tiles[0].length; y++) {
 			for (int x = 0; x < tiles.length; x++) {
-				result[x][y] = getColor(tiles[x][y]);
+				result[x][y] = getColour(tiles[x][y]);
 			}
 		}
 		return result;
 	}
 
-	private static int getColor(Bitmap bitmap) {
+	private static int getColour(Bitmap bitmap) {
 		int r = 0;
 		int g = 0;
 		int b = 0;

@@ -8,35 +8,29 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import game.Game;
 import game.Options;
 import game.entity.Entity;
-import game.entity.Player;
 import game.entity.mob.Mob;
-import game.entity.mob.Team;
-import game.entity.predicates.EntityIntersectsBB;
-import game.entity.predicates.EntityIntersectsBBAndInstanceOf;
+import game.entity.mob.Player;
 import game.gfx.Art;
 import game.gfx.Bitmap;
 import game.gfx.Screen;
-import game.gfx.Font;
 import game.level.tile.FloorTile;
 import game.level.tile.Tile;
-import game.level.tile.WallTile;
 import game.math.BB;
-import game.math.BBPredicate;
 import game.math.Vec2;
+import game.math.predicates.BBPredicate;
+import game.math.predicates.EntityIntersectsBB;
+import game.math.predicates.EntityIntersectsBBAndInstanceOf;
 
 public class Level {
 
 	private Random random = new Random();
 
 	private LinkedList<Tile>[] tiles;
-	private List<Vec2> spawnPointsP1;
-	private List<Vec2> spawnPointsP2;
+	private List<Vec2> spawnPoints;
 	private Bitmap minimap;
 	private boolean largeMap = false, smallMap = false;
-	private boolean seen[];
 
 	final int[] neighbourOffsets;
 
@@ -44,15 +38,13 @@ public class Level {
 	public final int width, height;
 	public List<Entity>[] entityMap;
 	public List<Entity> entities = new ArrayList<Entity>();
-	// public List<Updateable> tickItems = new ArrayList<Updateable>();
 	public int maxMonsters;
 
 	public int[][] monsterDensity;
 	public int densityTileWidth = 5;
 	public int densityTileHeight = 5;
 
-	public int player1Score = 0;
-	public int player2Score = 0;
+	public int playerScore = 0;
 
 	@SuppressWarnings("unchecked")
 	public Level(int width, int height) {
@@ -84,15 +76,12 @@ public class Level {
 
 		initializeTileMap();
 
-		spawnPointsP1 = new ArrayList<Vec2>();
-		spawnPointsP2 = new ArrayList<Vec2>();
+		spawnPoints = new ArrayList<Vec2>();
 
 		entityMap = new List[width * height];
 		for (int i = 0; i < width * height; i++) {
 			entityMap[i] = new ArrayList<Entity>();
 		}
-
-		setSeen(new boolean[(width + 1) * (height + 1)]);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -126,10 +115,6 @@ public class Level {
 		tile.init(this, x, y);
 
 		updateTiles(x, y, tile);
-
-		// if (tile instanceof AnimatedTile) {
-		// tickItems.add((Updateable) tile);
-		// }
 	}
 
 	public Tile getTile(int x, int y) {
@@ -167,45 +152,29 @@ public class Level {
 	}
 
 	/**
-	 * Add a player spawn point for the given team
+	 * Add a possible spawn point for the humans
 	 * 
 	 * @param x
 	 * @param y
 	 * @param team
 	 */
-
-	public void addSpawnPoint(int x, int y, int team) {
-		if (team == Team.Team1) {
-			spawnPointsP1.add(new Vec2(x, y));
-		} else if (team == Team.Team2) {
-			spawnPointsP2.add(new Vec2(x, y));
-		} else {
-			return;
-		}
+	public void addSpawnPoint(int x, int y) {
+			spawnPoints.add(new Vec2(x, y));
 
 	}
 
-	public Vec2 getRandomSpawnPoint(int team) {
-		int index;
-		if (team == Team.Team1) {
-			index = random.nextInt(spawnPointsP1.size() - 1);
-			return spawnPointsP1.get(index);
-		} else if (team == Team.Team2) {
-			index = random.nextInt(spawnPointsP2.size() - 1);
-			return spawnPointsP2.get(index);
-		} else {
-			return null;
-		}
+	public Vec2 getRandomSpawnPoint() {
+		int index = random.nextInt(spawnPoints.size() - 1);
+			return spawnPoints.get(index);
 	}
 
 	/**
-	 * Checks that there are spawn points for all players
+	 * Checks that there are spawn points for new humans
 	 * 
 	 * @return true if all players can spawn
 	 */
-
-	public boolean canPlayerSpawn() {
-		return !spawnPointsP1.isEmpty() && !spawnPointsP2.isEmpty();
+	public boolean canSpawn() {
+		return !spawnPoints.isEmpty();
 	}
 
 	public void insertToEntityMap(Entity e) {
@@ -353,13 +322,6 @@ public class Level {
 		// TODO: add check for win state
 	}
 
-	private boolean hasSeen(int x, int y) {
-		return getSeen()[x + y * (width + 1)]
-				|| getSeen()[(x + 1) + y * (width + 1)]
-				|| getSeen()[x + (y + 1) * (width + 1)]
-				|| getSeen()[(x + 1) + (y + 1) * (width + 1)];
-	}
-
 	public void render(Screen screen, int xScroll, int yScroll) {
 		int x0 = xScroll / Tile.WIDTH;
 		int y0 = yScroll / Tile.HEIGHT;
@@ -372,9 +334,7 @@ public class Level {
 			y0--;
 		}
 
-		Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll
-				- Tile.HEIGHT, xScroll + screen.getWidth() + Tile.WIDTH,
-				yScroll + screen.getHeight() + Tile.HEIGHT);
+		Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll - Tile.HEIGHT, xScroll + screen.getWidth() + Tile.WIDTH, yScroll + screen.getHeight() + Tile.HEIGHT);
 
 		screen.setOffset(-xScroll, -yScroll);
 
@@ -401,16 +361,12 @@ public class Level {
 
 				// draw sand outside the level
 				if (x < 0 || x >= width || y < 0 || y >= height) {
-					screen.draw(Art.floorTiles[5][0], x * Tile.WIDTH, y
-							* Tile.HEIGHT);
+					screen.draw(Art.floorTile, x * Tile.WIDTH, y * Tile.HEIGHT);
 					continue;
 				}
 
-				if (canSee(x, y)) {
-					for (int i = 0; i < tiles[x + y * width].size(); i++) {
-						tiles[x + y * width].get(i).render(screen);
-					}
-
+				for (int i = 0; i < tiles[x + y * width].size(); i++) {
+					tiles[x + y * width].get(i).render(screen);
 				}
 			}
 		}
@@ -422,10 +378,8 @@ public class Level {
 				if (x < 0 || x >= width || y < 0 || y >= height) {
 					continue;
 				}
-				if (canSee(x, y)) {
-					for (int i = 0; i < tiles[x + y * width].size(); i++) {
-						tiles[x + y * width].get(i).renderTop(screen);
-					}
+				for (int i = 0; i < tiles[x + y * width].size(); i++) {
+					tiles[x + y * width].get(i).renderTop(screen);
 				}
 			}
 		}
@@ -435,11 +389,7 @@ public class Level {
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				int i = x + y * width;
-				if (hasSeen(x, y)) {
-					minimap.setPixel(i, getTile(x, y).minimapColor);
-				} else {
-					minimap.setPixel(i, 0xff000000);
-				}
+				minimap.setPixel(i, getTile(x, y).minimapColor);
 			}
 		}
 
@@ -454,9 +404,7 @@ public class Level {
 					int x = (int) (e.pos.x / Tile.WIDTH);
 					int y = (int) (e.pos.y / Tile.WIDTH);
 					if (x >= 0 && y >= 0 && x < width && y < height) {
-						if (hasSeen(x, y)) {
-							minimap.draw(Art.mapIcons[e.minimapIcon % 4][e.minimapIcon / 4], x - 2, y - 2);
-						}
+						minimap.draw(Art.mapIcons[e.minimapIcon % 4][e.minimapIcon / 4], x - 2, y - 2);
 					}
 				}
 			}
@@ -474,7 +422,7 @@ public class Level {
 			displaymap = minimap;
 		}
 
-		screen.draw(Art.panel, 0, screen.getHeight() - 80);
+		//screen.draw(Art.panel, 0, screen.getHeight() - 80);
 		screen.draw(displaymap, 429, screen.getHeight() - 80 + 5);
 	}
 
@@ -514,12 +462,12 @@ public class Level {
 		for (int y = 0; y < 64; y++) {
 			if (y < diffy || y >= (64 - diffy)) {
 				for (int x = 0; x < 64; x++) {
-					largeMap.setPixel(x + (y * 64), Art.floorTileColors[5 & 7][5 / 8]);
+					largeMap.setPixel(x + (y * 64), Art.floorTileColor);
 				}
 			} else {
 				for (int x = 0; x < 64; x++) {
 					if (x < diffx || x > (64 - diffx)) {
-						largeMap.setPixel(x + (y * 64), Art.floorTileColors[5 & 7][5 / 8]);
+						largeMap.setPixel(x + (y * 64), Art.floorTileColor);
 					} else {
 						if (((drawx + donex) + (drawy + doney) * width) < minimap.totalPixels() - 1) {
 							largeMap.setPixel(x + (y * 64), minimap.getPixel((drawx + donex) + (drawy + doney) * width));
@@ -547,8 +495,7 @@ public class Level {
 							minimap.getPixel(smallx + smally * width));
 					smallx++;
 				} else
-					smallMap.setPixel(x + y * 64,
-							Art.floorTileColors[5 & 7][5 / 8]);
+					smallMap.setPixel(x + y * 64, Art.floorTileColor);
 			}
 			smallx = 0;
 			if (y >= (32 - height / 2) && y < (32 + height / 2) - 1) {
@@ -556,18 +503,6 @@ public class Level {
 			}
 		}
 		return smallMap;
-	}
-
-	private boolean canSee(int x, int y) {
-		if (x < 0 || y < 1 || x >= width || y >= height) {
-			return true;
-		}
-		return getSeen()[x + (y - 1) * (width + 1)]
-				|| getSeen()[(x + 1) + (y - 1) * (width + 1)]
-				|| getSeen()[x + y * (width + 1)]
-				|| getSeen()[(x + 1) + y * (width + 1)]
-				|| getSeen()[x + (y + 1) * (width + 1)]
-				|| getSeen()[(x + 1) + (y + 1) * (width + 1)];
 	}
 
 	public List<BB> getClipBBs(Entity e) {
@@ -608,38 +543,6 @@ public class Level {
 		return result;
 	}
 
-	public void reveal(int x, int y, int radius) {
-		for (int i = 0; i < radius * 2 + 1; i++) {
-			revealLine(x, y, x - radius + i, y - radius, radius);
-			revealLine(x, y, x - radius + i, y + radius, radius);
-			revealLine(x, y, x - radius, y - radius + i, radius);
-			revealLine(x, y, x + radius, y - radius + i, radius);
-		}
-	}
-
-	private void revealLine(int x0, int y0, int x1, int y1, int radius) {
-		for (int i = 0; i <= radius; i++) {
-			int xx = x0 + (x1 - x0) * i / radius;
-			int yy = y0 + (y1 - y0) * i / radius;
-			if (xx < 0 || yy < 0 || xx >= width || yy >= height) {
-				return;
-			}
-			int xd = xx - x0;
-			int yd = yy - y0;
-			if (xd * xd + yd * yd > radius * radius) {
-				return;
-			}
-			Tile tile = getTile(xx, yy);
-			if (tile instanceof WallTile) {
-				return;
-			}
-			getSeen()[xx + yy * (width + 1)] = true;
-			getSeen()[(xx + 1) + yy * (width + 1)] = true;
-			getSeen()[xx + (yy + 1) * (width + 1)] = true;
-			getSeen()[(xx + 1) + (yy + 1) * (width + 1)] = true;
-		}
-	}
-
 	public void placeTile(int x, int y, Tile tile, Player player) {
 		if (!getTile(x, y).isBuildable()) {
 			return;
@@ -658,13 +561,5 @@ public class Level {
 			}
 		}
 		return count;
-	}
-
-	public boolean[] getSeen() {
-		return seen;
-	}
-
-	public void setSeen(boolean seen[]) {
-		this.seen = seen;
 	}
 }

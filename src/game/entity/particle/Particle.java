@@ -1,10 +1,11 @@
 package game.entity.particle;
 
 import game.entity.Entity;
-import game.gfx.Art;
+//import game.gfx.Art;
 import game.gfx.Screen;
 
 public class Particle extends Entity {
+	
 	public double xa, ya, za;
 	public double z;
 	public Entity owner;
@@ -39,7 +40,7 @@ public class Particle extends Entity {
 			remove();
 	}
 
-	public void render(Screen screen) {
-		screen.draw(Art.particles[1][0], pos.x - 8, pos.y - 8 - z);
+	public void render(Screen s) {
+		//s.draw(Art.particles[1][0], pos.x - 8, pos.y - 8 - z);
 	}
 }

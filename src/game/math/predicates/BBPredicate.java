@@ -1,9 +1,11 @@
-package game.math;
+package game.math.predicates;
+
+import game.math.BBOwner;
 
 /**
  * A BBPredicate is a generic predicate that tests whether an item that has a
  * bounding box (i.e. it implements {@link BBOwner}) fulfills some conditions
- * in interaction with a given bounding box (for example
+ * in interaction with a given bounding box
  */
 public interface BBPredicate<T extends BBOwner> {
 	

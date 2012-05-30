@@ -1,7 +1,6 @@
-package game.entity.predicates;
+package game.math.predicates;
 
 import game.entity.Entity;
-import game.math.BBPredicate;
 
 /**
  * <p>
@@ -21,8 +20,7 @@ public enum EntityIntersectsBB implements BBPredicate<Entity> {
 	INSTANCE;
 
 	@Override
-	public boolean appliesTo(Entity item, double x0, double y0, double x1,
-			double y1) {
+	public boolean appliesTo(Entity item, double x0, double y0, double x1, double y1) {
 		return !item.removed && item.intersects(x0, y0, x1, y1);
 	}
 

@@ -1,202 +1,79 @@
 package game.entity.building;
 
-import game.Game;
-import game.Options;
-import game.entity.Entity;
-import game.entity.Usable;
-import game.entity.Player;
-import game.entity.mob.Mob;
-import game.gfx.Art;
-import game.gfx.Bitmap;
+import java.util.Random;
+
 import game.gfx.Screen;
-import game.math.BB;
+import game.level.Mapable;
 
 /**
- * Generic building class
+ * Represents the buildings in the city; where the humans will start off in and
+ * mobs can move about inside.
+ * 
+ * @author Kyle Brodie
+ * 
  */
-public abstract class Building extends Mob implements Usable {
-	public static final int SPAWN_INTERVAL = 60;
-	public static final int MIN_BUILDING_DISTANCE = 1700; // Sqr
-
-	public int REGEN_INTERVAL = 15;
-	public float REGEN_AMOUNT = 1;
-	public boolean REGEN_HEALTH = true;
-	public int healingTime = REGEN_INTERVAL;
-
+public class Building implements Mapable {
+	
+	protected Random random = new Random();
+	
+	private static final int COLOR = 0xfff0f0f0; //some shade of gray...I think
+	
+	//public static final int MIN_BUILDING_DISTANCE = 1700; // Squared
+	
 	public int spawnTime = 0;
-	public Mob carriedBy = null;
-
-	protected int upgradeLevel = 0;
-	private int maxUpgradeLevel = 0;
-	private int[] upgradeCosts = null;
-
+	
+	private int x, y, width, height;
+	
 	/**
 	 * Constructor
 	 * 
 	 * @param x
-	 *            Initial X coordinate
+	 *            tile location of top left corner
 	 * @param y
-	 *            Initial Y coordinate
-	 * @param team
-	 *            Team number
+	 *            tile location of top left corner
+	 * @param width
+	 *            measured in tiles in tiles
+	 * @param height
+	 *            measured in tiles in tiles
 	 */
-	public Building(double x, double y, int team) {
-		super(x, y, team);
-
-		setStartHealth(20);
-		freezeTime = 10;
-		spawnTime = random.nextInt(SPAWN_INTERVAL);
+	public Building(int x, int y, int width, int height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		
+		//TODO: determine if there should be a spawn time or if it should be instantaneous.
+		spawnTime = random.nextInt(0);
 	}
 
-	@Override
-	public void render(Screen screen) {
-		super.render(screen);
+	public void render(Screen s) {
 	}
 
-	/**
-	 * Render the marker onto the given screen
-	 * 
-	 * @param screen
-	 *            AbstractScreen
-	 */
-	protected void renderMarker(Screen screen) {
-		super.renderMarker(screen);
-	}
-
-	@Override
 	public void tick() {
-		super.tick();
-		if (carriedBy == null) {
-			//fallDownHole(); TODO: allow for falling? idk yet
-		}
-		xd = 0.0;
-		yd = 0.0;
-	}
-
-	public void doRegenTime() {
-		if (freezeTime <= 0) {
-			super.doRegenTime();
-		} else {
-			// DO NOTHING
-		}
-	}
-
-	/**
-	 * Called if this building is picked up
-	 * 
-	 * @param mob
-	 *            Reference to the mob object carrying this building
-	 */
-	public void onPickup(Mob mob) {
-		carriedBy = mob;
-	}
-
-	/**
-	 * Called if this building is dropped by its carrier
-	 */
-	public void onDrop() {
-		carriedBy = null;
-	}
-
-	/**
-	 * Check if this building is being carried
-	 * 
-	 * @return True if carried, false if not
-	 */
-	public boolean isCarried() {
-		return carriedBy != null;
 	}
 
 	@Override
-	public Bitmap getSprite() {
-		return Art.floorTiles[3][2];
+	public int getMapColor() {
+		return COLOR;
 	}
 
 	@Override
-	public boolean move(double xBump, double yBump) {
-		return false;
+	public int getMinimapColor() {
+		return 0xff000000; //Black
 	}
 
 	@Override
-	public void slideMove(double xa, double ya) {
-		super.move(xa, ya);
-	}
-
-	/**
-	 * Called if building upgrade is complete
-	 */
-	protected void upgradeComplete() {
-	}
-
-	/*@Override
-	public boolean upgrade(Player p) {
-		if (upgradeLevel >= maxUpgradeLevel) {
-			Game.soundPlayer.playSound("/sound/Fail.wav", (float) pos.x, (float) pos.y, true);
-			if (this.team == Game.localTeam) {
-				Notifications.getInstance().add(Game.texts.getStatic("upgrade.full"));
-			}
-			return false;
-		}
-
-		final int cost = upgradeCosts[upgradeLevel];
-		if (cost > p.getScore() && !Options.getAsBoolean(Options.CREATIVE)) {
-			Game.soundPlayer.playSound("/sound/Fail.wav", (float) pos.x, (float) pos.y, true);
-			if (this.team == Game.localTeam) {
-				Notifications.getInstance().add(Game.texts.upgradeNotEnoughMoney(cost));
-			}
-			return false;
-		}
-
-		Game.soundPlayer.playSound("/sound/Upgrade.wav", (float) pos.x, (float) pos.y, true);
-
-		++upgradeLevel;
-		p.useMoney(cost);
-		upgradeComplete();
-
-		if (this.team == Game.localTeam) {
-			Notifications.getInstance().add(Game.texts.upgradeTo(upgradeLevel + 1));
-		}
-		return true;
-	}*/
-
-	/**
-	 * Make this building upgradeable
-	 * 
-	 * @param costs
-	 *            Cost vector
-	 */
-	void makeUpgradeableWithCosts(int[] costs) {
-		if (costs == null) {
-			maxUpgradeLevel = 0;
-		} else {
-			upgradeCosts = costs;
-			maxUpgradeLevel = costs.length - 1;
-			upgradeComplete();
-		}
-		return;
+	public int getTileWidth() {
+		return width;
 	}
 
 	@Override
-	public void use(Entity user) {
-		if (user instanceof Player) {
-			((Player) user).pickup(this);
-		}
+	public int getTileHeight() {
+		return height;
 	}
 
 	@Override
-	public boolean isHighlightable() {
-		return true;
+	public String getName() {
+		return "BUILDING";
 	}
-
-	@Override
-	public void setHighlighted(boolean hl) {
-		setHighlight(hl);
-		justDroppedTicks = 80;
-	}
-
-	@Override
-	public boolean isAllowedToCancel() {
-		return true;
-	}
-
 }
