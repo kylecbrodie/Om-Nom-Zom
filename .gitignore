@@ -3,6 +3,9 @@
 *.jar
 
 # Mac OS X #
+._*
+.Spotlight-V100
+.Trashes
 .DS_Store
 
 # Eclipse #

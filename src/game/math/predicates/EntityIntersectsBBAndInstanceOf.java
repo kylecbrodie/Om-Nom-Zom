@@ -1,20 +1,19 @@
 package game.math.predicates;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
 import game.entity.Entity;
 
 /**
- * <p>
  * This predicate applies for an {@link Entity} if it intersects with the given
  * bounding box AND is an instance of at least one of the given classes.
- * The only exception is when the item is already removed.
- * </p>
  * <p>
- * The entity and the bounding box are considered to intersect if they share
- * at least one point together.
+ * See {@link EntityIntersectsBB} for the definition of intersection.
  * </p>
+ * 
+ * @author Catacomb-Snatch Project (http://www.catacombsnatch.net/)
  */
 public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
 	
@@ -29,22 +28,19 @@ public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
 		this.entityClasses = new HashSet<Class<? extends Entity>>();
 		this.entityClasses.add(class1);
 	}
-
+	
 	/**
 	 * Constructs a predicate that is true if the given entity is an instance of
-	 * either class1 or class2 and intersects the bb.
-	 * @param class1 first class to consider
-	 * @param class2 second class to consider
+	 * any of the provided classes and intersects the BoundingBox.
+	 * 
+	 * @param classes
+	 *            The Entity has to be an instance of one class in this list of
+	 *            classes
 	 */
-	public EntityIntersectsBBAndInstanceOf(Class<? extends Entity> class1,
-			Class<? extends Entity> class2) {
-		this(class1);
-		entityClasses.add(class2);
+	public EntityIntersectsBBAndInstanceOf(Class<? extends Entity>... classes) {
+		this.entityClasses = new HashSet<Class<? extends Entity>>();
+		entityClasses.addAll(Arrays.asList(classes));
 	}
-
-	// no var-args constructor,
-	// because then there would be an unchecked assignment warning;
-	// just add the necessary constructors as needed
 
 	@Override
 	public boolean appliesTo(Entity item, double x0, double y0, double x1, double y1) {
@@ -55,10 +51,9 @@ public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
 		}
 		return false;
 	}
-
+	
+	@Override
 	public String toString() {
-		return "EntityIntersectsOneOfBBPredicate{" +
-				"entityClasses=" + entityClasses +
-				'}';
+		return "EntityIntersectsOneOfBBPredicate: {" + "entityClasses = " + entityClasses + '}';
 	}
 }

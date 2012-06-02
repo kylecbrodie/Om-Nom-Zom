@@ -1,64 +1,70 @@
 package game;
 
+import game.entity.TestEntity;
+import game.gfx.Screen;
+import game.level.Level;
+import game.level.tile.Tile;
+
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Color;
 import java.awt.image.BufferStrategy;
-import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-
-import game.level.*;
-import game.entity.mob.TestEntity;
-import game.gfx.Screen;
-
+/**
+ * The main class that runs the game.
+ * 
+ * @author Kyle Brodie
+ *
+ */
 public class Game extends Canvas implements Runnable {
+	
 	private static final long serialVersionUID = 1L;
 	
-	public static final String NAME = "OmNomZom";
-	public static final int GAME_WIDTH = 512;
-	public static final int GAME_HEIGHT = GAME_WIDTH * 3 / 4;
+	public static final String NAME = "Om Nom Zom";
+	public static final int GAME_WIDTH = 10;
+	public static final int GAME_HEIGHT = 10;
+	public static final int SCREEN_WIDTH = GAME_WIDTH * Tile.WIDTH;
+	public static final int SCREEN_HEIGHT = GAME_HEIGHT * Tile.HEIGHT;
 	public static final int SCALE = 2;
 	public static final int TICKS_PER_SEC = 60;
 	
 	private boolean running = false;
 	public long totalTicks,totalGameTicks;
 
-	private Screen screen = new Screen(GAME_WIDTH,GAME_HEIGHT);
-	private Keys keys = new Keys();
-	//private MouseButtons mouse = new MouseButtons();
-	private Level level;
-	public static Object soundPlayer;
+	private Screen screen;
 	
-	private static volatile File tempDir = null;
+	private Keys keys = new Keys();
+	private Level level;
 	
 	private void init() {
-            running = true;
-            level = new Level(100,100);
-            level.addEntity(new TestEntity(10, 10));
-            
-            createBufferStrategy(2);
-            requestFocus();
+        running = true;
+        screen = new Screen(SCREEN_WIDTH, SCREEN_HEIGHT);
+        level = new Level(GAME_WIDTH,GAME_HEIGHT);
+        level.addEntity(new TestEntity(0,0,keys));
+        
+        createBufferStrategy(2);
+        requestFocus();
 	}
-
+	
 	public void run() {
-                init();
+		init();
 		long lastTime = System.nanoTime();
 		final double nsPerTick = 1000000000.0 / TICKS_PER_SEC;
 		double unprocessedTicks = 0;
 		int frames = 0;
 		int ticks = 0;
 		long lastTimer = System.currentTimeMillis();
-		
+
 		while (running) {
 			long now = System.nanoTime();
 			unprocessedTicks += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			
+
 			while (unprocessedTicks >= 1) {
 				ticks++;
 				tick();
@@ -67,16 +73,23 @@ public class Game extends Canvas implements Runnable {
 
 			try {
 				Thread.sleep(2);
-			} catch (InterruptedException e) { e.printStackTrace(); }
-
-			frames++;
-                        BufferStrategy bs = getBufferStrategy();
-                        if(bs == null) {
-                            createBufferStrategy(2);
-                            continue;
-                        }
-                        Graphics g = bs.getDrawGraphics();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			BufferStrategy bs = getBufferStrategy();
+			if (bs == null) {
+				createBufferStrategy(2);
+				continue;
+			}
+			Graphics g = bs.getDrawGraphics();
+			
 			render(g);
+			frames++;
+			
+			if(bs != null) {
+				bs.show();
+			}
 			
 			if (System.currentTimeMillis() - lastTimer > 1000) {
 				lastTimer += 1000;
@@ -99,31 +112,26 @@ public class Game extends Canvas implements Runnable {
 		}
 	}
 	
-	private static boolean drewPaused = false;
-	
 	private void render(Graphics g) {
-		if (!this.hasFocus()) {
-			if (!drewPaused) {
-				g.drawString("PAUSED!", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
-				drewPaused = true;
-			}
+		if (!hasFocus()) {
+			g.drawString("PAUSED!", SCREEN_WIDTH * SCALE / 2, SCREEN_HEIGHT * SCALE / 2);
 			return;
 		}
-		drewPaused = false;
-
-		level.render(screen, 0, 0);
+		
+		screen.clear();
+		level.render(screen);
 
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, getWidth(), getHeight());
 
-		g.drawImage(screen.image, 0, 0, GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE, null);
+		g.drawImage(screen.image, 0, 0, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, null);
 	}
 	
 	public Game() {
-            this.setPreferredSize(new Dimension(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE));
-            this.setMinimumSize(new Dimension(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE));
-            this.setMaximumSize(new Dimension(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE));
-            this.addKeyListener(new InputHandler(keys));
+            this.setPreferredSize(new Dimension(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE));
+            this.setMinimumSize(new Dimension(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE));
+            this.setMaximumSize(new Dimension(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE));
+            this.addKeyListener(new KeyboardHandler(keys));
             JFrame frame = new JFrame();
             JPanel panel = new JPanel(new BorderLayout());
             panel.add(this);
@@ -147,44 +155,5 @@ public class Game extends Canvas implements Runnable {
 	
 	public void stop() {
 		running = false;
-	}
-
-	public static File getTempDir() {
-		if (tempDir == null) {
-		tempDir = getAppDir("omnomzom");
-		}
-		return tempDir;
-		}
-
-	public static File getAppDir(String s) {
-		String s1 = System.getProperty("user.home", ".");
-		File file;
-		String sys = getOS();
-		
-		if (sys.contains("win")) {
-			String s2 = System.getenv("APPDATA");
-			if (s2 != null) {
-				file = new File(s2, (new StringBuilder()).append(".").append(s).append('/').toString());
-			} else {
-				file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
-			}
-		} else if (s.contains("mac")) {
-			file = new File(s1, (new StringBuilder()).append("Library/Application Support/").append(s).toString());
-		} else if (s.contains("solaris")) {
-			file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
-		} else if (s.contains("linux")) {
-			file = new File(s1, (new StringBuilder()).append('.').append(s).append('/').toString());
-		} else {
-			file = new File(s1, (new StringBuilder()).append(s).append('/').toString());
-		}
-		if (!file.exists() && !file.mkdirs()) {
-			throw new RuntimeException((new StringBuilder()).append("The working directory could not be created: ").append(file).toString());
-		} else {
-			return file;
-		}
-	}
-	
-	public static String getOS() {
-		return System.getProperty("os.name").toLowerCase();
 	}
 }

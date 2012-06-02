@@ -2,23 +2,21 @@ package game.math;
 
 import game.entity.Entity;
 
-/***
- * Enforces collision detection between entities
+/**
+ * Enforces collision handling for those who
+ * want to use bounding boxes
  * 
  * @author Kyle Brodie
- * 
+ *
  */
 public interface BBOwner {
 	
 	/**
-	 * Logic to be executed in the event of a collision
+	 * Called when the bounding box this owner owns intersects the bounding box of another Entity e
 	 * 
-	 * @param other
-	 *            the entity that is intersecting this object
-	 * @param xa
-	 *            the x acceleration of the other entity
-	 * @param ya
-	 *            the y acceleration of the other entity
+	 * @param e the intersecting Entity
+	 * @param xa the x acceleration of the Entity
+	 * @param ya the y acceleration of the Entity
 	 */
-	public void handleCollision(Entity other, double xa, double ya);
+	public void handleCollision(Entity e, double xa, double ya);
 }

@@ -39,26 +39,19 @@ public class Keys {
 	public Key down = new Key("down");
 	public Key left = new Key("left");
 	public Key right = new Key("right");
-	public Key fire = new Key("fire");
-      public Key fireUp = new Key("fireUp");
-      public Key fireDown = new Key("fireDown");
-      public Key fireLeft = new Key("fireLeft");
-      public Key fireRight = new Key("fireRight");
-	public Key build = new Key("build");
-	public Key use = new Key("use");
-	public Key upgrade = new Key("upgrade");
+	
+	public Key sprint = new Key("sprint");
+	public Key attack = new Key("attack");
+	
+    public Key lookUp = new Key("lookUp");
+    public Key lookDown = new Key("lookDown");
+    public Key lookLeft = new Key("lookLeft");
+    public Key lookRight = new Key("lookRight");
+    
 	public Key pause = new Key("pause");
 	public Key fullscreen = new Key("fullscreen");
-	public Key sprint = new Key("sprint");
 	public Key screenShot = new Key("screenShot");
-	public Key chat = new Key("chat");
 	public Key console = new Key("console");
-	
-	public Key weaponSlot1 = new Key("weaponSlot1");
-	public Key weaponSlot2 = new Key("weaponSlot2");
-	public Key weaponSlot3 = new Key("weaponSlot3");
-	public Key cycleLeft = new Key("cycleLeft");
-	public Key cycleRight = new Key("cycleRight");
 	
 	public void tick() {
 		for (Key key : all)
@@ -75,15 +68,15 @@ public class Keys {
 	}
 	
 	public void addKey(Key k) {
-		addKey(k, all.size());
+		all.add(k);
 	}
 	
-	public void addKey(Key k, int id) {
-		all.add(id, k);
+	public void addKey(Key k, int i) {
+		all.add(i, k);
 	}
 	
-	public void removeKey(int id) {
-		removeKey(all.get(id));
+	public void removeKey(int i) {
+		all.remove(i);
 	}
 	
 	public void removeKey(Key k) {

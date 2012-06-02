@@ -9,27 +9,26 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Loads all the artwork for the game. All the artwork is accessible statically.
+ * 
+ * @author Kyle Brodie
+ * @author Catacomb-Snatch Project (http://www.catacombsnatch.net/)
+ */
 @SuppressWarnings("unused")
 public class Art {
 	
-	//Mobs
+	//entities
 	public static Bitmap entityFiller = load("/art/entity/entity_static.png");
 	public static Bitmap[][] entityFillerAni = cut("/art/entity/entity_ani.png", 32, 32);
 	
-	//walls
+	//wall
 	public static Bitmap wallTile = load("/art/tiles/wall.png");
 	public static int wallTileColor = getColour(wallTile);
 	
-	//floors
-	public static Bitmap floorTile = load("/art/tiles/floor.png");;
+	//floor
+	public static Bitmap floorTile = load("/art/tiles/floor.png");
 	public static int floorTileColor = getColour(floorTile);
-	
-	//Particles
-	public static Bitmap[][] particles;
-	
-	//icons
-	public static Bitmap[][] mapIcons;
-	public static Bitmap panel;
 	
 	/**
 	 * Return the bitmaps for a given piece of art, cut out from a sheet
@@ -81,7 +80,7 @@ public class Art {
 		}
 		return null;
 	}
-
+	
 	private static Bitmap[][] cutv(String string, int h) {
 		try {
 			BufferedImage bi = ImageIO.read(Game.class.getResource(string));
@@ -128,7 +127,12 @@ public class Art {
 		return null;
 	}
 
-	private static int[][] getColours(Bitmap[][] tiles) {
+	/**
+	 * Calculates the average colour of the Bitmaps
+	 * @param tiles the bitmaps to average
+	 * @return the average colours in RGBA
+	 */
+	public static int[][] getColours(Bitmap[][] tiles) {
 		int[][] result = new int[tiles.length][tiles[0].length];
 		for (int y = 0; y < tiles[0].length; y++) {
 			for (int x = 0; x < tiles.length; x++) {
@@ -138,7 +142,12 @@ public class Art {
 		return result;
 	}
 
-	private static int getColour(Bitmap bitmap) {
+	/**
+	 * Calculates the average colour of the Bitmap
+	 * @param bitmap the bitmap to average
+	 * @return the average colour in RGBA
+	 */
+	public static int getColour(Bitmap bitmap) {
 		int r = 0;
 		int g = 0;
 		int b = 0;

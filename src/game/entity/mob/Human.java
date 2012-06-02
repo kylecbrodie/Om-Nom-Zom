@@ -3,15 +3,14 @@ package game.entity.mob;
 import game.gfx.Screen;
 
 /**
- * 
  * @author Kyle Brodie
  *
  */
-public class Player extends Mob {
+public class Human extends Mob {
 
 	@Override
 	public void tick() {
-		// TODO implement
+		// TODO impement
 		
 	}
 

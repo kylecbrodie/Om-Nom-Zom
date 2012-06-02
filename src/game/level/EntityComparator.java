@@ -1,27 +1,29 @@
 package game.level;
 
+import game.entity.Entity;
+import game.math.Vector2d;
+
 import java.util.Comparator;
 
-import game.entity.Entity;
-
 /**
- * Sorts entities in row major order of their pixel locations NOT tile locations.
- * Put another way: the order of precedence is y location (which one is high up
- * on the screen) then x location (which one is farther left on the screen)
+ * Compares two entities to sort them in row major order.
  * 
  * @author Kyle Brodie
- * 
+ *
  */
 public class EntityComparator implements Comparator<Entity> {
 	
+	@Override
 	public int compare(Entity e0, Entity e1) {
-		if (e0.pos.y < e1.pos.y)
+		Vector2d e0Pos = e0.getPos();
+		Vector2d e1Pos = e1.getPos();
+		if (e0Pos.y < e1Pos.y)
 			return -1;
-		if (e0.pos.y > e1.pos.y)
+		if (e0Pos.y > e1Pos.y)
 			return +1;
-		if (e0.pos.x < e1.pos.x)
+		if (e0Pos.x < e1Pos.x)
 			return -1;
-		if (e0.pos.x > e1.pos.x)
+		if (e0Pos.x > e1Pos.x)
 			return +1;
 		return 0;
 	}

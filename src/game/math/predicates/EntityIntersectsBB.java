@@ -11,6 +11,8 @@ import game.entity.Entity;
  * The entity and the bounding box are considered to intersect if they share
  * at least one point together.
  * </p>
+ * 
+ * @author Catacomb-Snatch Project (http://www.catacombsnatch.net/)
  */
 public enum EntityIntersectsBB implements BBPredicate<Entity> {
 
