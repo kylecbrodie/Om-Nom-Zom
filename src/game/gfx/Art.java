@@ -19,27 +19,28 @@ import javax.imageio.ImageIO;
 public class Art {
 	
 	//entities
-	public static Bitmap entityFiller = load("/art/entity/entity_static.png");
-	public static Bitmap[][] entityFillerAni = cut("/art/entity/entity_ani.png", 32, 32);
+	public static Bitmap entityFiller = load("art/entity/entity_static.png");
+	public static Bitmap[][] entityFillerAni = cut("art/entity/entity_ani.png", 32, 32);
 	
 	//mob
-	public static Bitmap[][] human_male = cut("/art/mob/human_male.png", 32, 32);
-	public static Bitmap[][] human_female = cut("/art/mob/human_female.png", 32, 32);
+	public static Bitmap[][] human_male = cut("art/mob/human_male.png", 32, 32);
+	public static Bitmap[][] human_female = cut("art/mob/human_female.png", 32, 32);
 
-	public static Bitmap[][] player = cut("/art/mob/player.png", 32, 32);
-	public static Bitmap[][] zombie = cut("/art/mob/zombie.png", 32, 32);
+	public static Bitmap[][] player = cut("art/mob/player.png", 32, 32);
+	public static Bitmap[][] zombie = cut("art/mob/zombie.png", 32, 32);
 	
 	
 	//wall
-	public static Bitmap wallTile = load("/art/tiles/wall.png");
+	public static Bitmap wallTile = load("art/tiles/wall.png");
 	public static int wallTileColor = getColour(wallTile);
 	
 	//floor
-	public static Bitmap floorTile = load("/art/tiles/floor.png");
+	public static Bitmap floorTile = load("art/tiles/floor.png");
 	public static int floorTileColor = getColour(floorTile);
+	
 	//street
-	public static Bitmap streetTile = load("/art/tiles/street_tiles.png");
-	public static int streetTileColor =  getColour(streetTile);
+	//public static Bitmap[][] streetTile = cut("art/tiles/street_tiles.png", 32, 32);
+	//public static int[][] streetTileColor =  getColours(streetTile);
 	
 	/**
 	 * Return the bitmaps for a given piece of art, cut out from a sheet

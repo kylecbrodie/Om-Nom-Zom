@@ -97,4 +97,14 @@ public final class Direction {
 		}
 		return Integer.MIN_VALUE;
 	}
+	
+	public final static int getDirectionTowards(Vector2i from, Vector2i to) {
+		int width = to.x - from.x;
+		int height = to.y - from.y;
+		if(Math.abs(width) > Math.abs(height)) {
+			return (width < 0) ? Direction.WEST : Direction.EAST;
+		} else {
+			return (height < 0) ? Direction.SOUTH : Direction.NORTH;
+		}
+	}
 }

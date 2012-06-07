@@ -66,17 +66,12 @@ public abstract class Entity implements Collidable {
 		for(Iterator<Collidable> i = colids.iterator(); i.hasNext();) {
 			Collidable next = i.next();
 			if(next instanceof Tile) {
-				Tile t = (Tile) next;
-				if(!t.canPass(this)) {
-					return false;
-				}
+				return false;
 			}
 			if(next instanceof Entity) {
 				Entity e = (Entity) next;
 				handleCollision(e, e.dir);
-				if(e.blocks(this)) {
-					return false;
-				}
+				return false;
 			}
 		}
 		

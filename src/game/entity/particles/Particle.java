@@ -4,7 +4,7 @@ import game.entity.Entity;
 import game.gfx.Art;
 import game.gfx.Bitmap;
 import game.gfx.Screen;
-import game.level.tile.Tile;
+import game.math.Vector2d;
 
 /**
  * Represents a particle to be generated on the fly
@@ -14,9 +14,9 @@ import game.level.tile.Tile;
  */
 public class Particle extends Entity {
 
-	private double x, y;
+	private double xp, yp;
 	public double xa, ya, za;
-	public double z;
+	public double zp;
 	public int life;
 	private Bitmap b;
 
@@ -29,10 +29,11 @@ public class Particle extends Entity {
 	 * @param ya y-velocity
 	 * @param bm the bitmap to look like.
 	 */
-	public Particle(double x, double y, double xa, double ya, Bitmap bm) {
-		setPos((int)(x / Tile.WIDTH), (int)(y / Tile.HEIGHT));
-		this.x = x;
-		this.y = y;
+	public Particle(int xt, int yt, double x, double y, double xa, double ya, Bitmap bm) {
+		setPos(xt, yt);
+		isBlocking = false;
+		xp = x;
+		yp = y;
 		double pow = random.nextDouble() * 1 + 1;
 		this.xa = xa * pow;
 		this.ya = ya * pow;
@@ -40,23 +41,28 @@ public class Particle extends Entity {
 		life = random.nextInt(20) + 50;
 		
 		b = new Bitmap(4,4);
-		b.clear(Art.getColour(bm)/* | randomColorShift()*/);
+		b.clear(Art.getColour(bm) | randomColorShift());
 	}
 	
-	/*private int randomColorShift() {
+	private int randomColorShift() {
+		boolean highestBit = random.nextBoolean();
+		int a = random.nextInt(0x7F000000) & 0x7F000000;
+		if(highestBit) {
+			a |= 0x80000000;
+		}
 		int r = random.nextInt(0x00FF0000) & 0x00FF0000;
 		int g = random.nextInt(0x0000FF00) & 0x0000FF00;
 		int b = random.nextInt(0x000000FF) & 0x000000FF;
-		return 0xFF000000 | r | g | b;
-	}*/
+		return a | r | g | b;
+	}
 
 	@Override
 	public void tick() {
-		x += xa;
-		y += ya;
-		z += za;
-		if (z < 0) {
-			z = 0;
+		xp += xa;
+		yp += ya;
+		zp += za;
+		if (zp < 0) {
+			zp = 0;
 			xa *= 0.8;
 			ya *= 0.8;
 		} else {
@@ -72,6 +78,11 @@ public class Particle extends Entity {
 
 	@Override
 	public void render(Screen s) {
-		s.draw(b, x - 8, y - 8 - z);
+		s.draw(b, xp - 8, yp - 8 - zp);
+	}
+	
+	@Override
+	public Vector2d getDrawPos() {
+		return new Vector2d(xp - 8, yp - 8 -zp);
 	}
 }

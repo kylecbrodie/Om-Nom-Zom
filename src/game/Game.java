@@ -38,8 +38,10 @@ public class Game extends Canvas implements Runnable {
 	public static final int TICKS_PER_SEC = 60;
 	
 	private boolean running = false;
-	public boolean paused = false;
+	public static boolean paused = false, won, lost;
 	public long totalTicks,totalGameTicks;
+	private int tps, fps;
+	private int timeout = 60 * 3, startTime = 60 * 3;
 
 	private Screen screen;
 	
@@ -102,7 +104,8 @@ public class Game extends Canvas implements Runnable {
 			
 			if (System.currentTimeMillis() - lastTimer > 1000) {
 				lastTimer += 1000;
-				System.out.println(ticks + " ticks, " + frames + " fps");
+				tps = ticks;
+				fps = frames;
 				frames = 0;
 				ticks = 0;
 			}
@@ -116,17 +119,31 @@ public class Game extends Canvas implements Runnable {
 			paused = true;
 		} else {
 			paused = false;
-			if (!paused) {
-				totalGameTicks++;
-
-				keys.tick();
-				level.tick();
+			if(timeout <= 0) {
+				lost = true;
+				won = false;
+				return;
 			}
+			totalGameTicks++;
+			
+			keys.tick();
+			level.tick();
 		}
 	}
 	
 	private void render(Graphics g) {
+		if(won) {
+			g.setColor(Color.white);
+			g.drawString("YOU WON!", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
+			return;
+		}
+		if(lost) {
+			g.setColor(Color.white);
+			g.drawString("YOU LOST :(", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
+			return;
+		}
 		if (paused) {
+			g.setColor(Color.white);
 			g.drawString("PAUSED!", GAME_WIDTH * SCALE / 2, GAME_HEIGHT * SCALE / 2);
 			return;
 		}
@@ -149,8 +166,12 @@ public class Game extends Canvas implements Runnable {
 		
 		Vector2i pos = player.getPos();
 		g.setColor(Color.white);
-		g.drawString("Player Tile X: " + pos.x, GAME_WIDTH * SCALE - 150, 3 * 40);
-		g.drawString("Player Tile Y: " + pos.y, GAME_WIDTH * SCALE - 150, 4 * 40);
+		g.drawString("FPS: " + fps, GAME_WIDTH * SCALE - 150, 1 * 20);
+		g.drawString("TICKS: " + tps, GAME_WIDTH * SCALE - 150, 2 * 20);
+		g.drawString("Time Left: " + (timeout = (int) (startTime - totalGameTicks / 60)), GAME_WIDTH * SCALE - 150, 3 * 20);
+		g.drawString("Humans Left: " + level.numHumans, GAME_WIDTH * SCALE - 150, 4 * 20);
+		g.drawString("Player Tile X: " + pos.x, GAME_WIDTH * SCALE - 150, 5 * 20);
+		g.drawString("Player Tile Y: " + pos.y, GAME_WIDTH * SCALE - 150, 6 * 20);
 	}
 	
 	private BufferedImage optimizeImage(BufferedImage image)

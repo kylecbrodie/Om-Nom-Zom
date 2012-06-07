@@ -1,6 +1,8 @@
 package game.level;
 
+import game.Game;
 import game.entity.Entity;
+import game.entity.mob.Human;
 import game.gfx.Art;
 import game.gfx.Screen;
 import game.level.tile.FloorTile;
@@ -34,6 +36,8 @@ public class Level {
 	
 	final int[] neighbourOffsets;
 	private final int width,height;
+	
+	public int numHumans = 0;
 	
 	@SuppressWarnings("unchecked")
 	public Level(int width, int height) {
@@ -134,12 +138,19 @@ public class Level {
 	}
 	
 	public void tick() {
+		if(numHumans <= 0) {
+			Game.won = true;
+			return;
+		}
 		for (int i = 0; i < entities.size(); i++) {
 			Entity e = entities.get(i);
 			if (!e.removed) {
 				e.tick();
 			}
 			if (e.removed) {
+				if(e instanceof Human) {
+					numHumans--;
+				}
 				entities.remove(i--);
 				removeFromEntityMap(e);
 			}
@@ -174,17 +185,17 @@ public class Level {
 			y0--;
 		}
 
-		//Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll - Tile.HEIGHT, xScroll + s.getWidth() + Tile.WIDTH, yScroll + s.getHeight() + Tile.HEIGHT);
+		Set<Entity> visibleEntities = getEntities(x0, y0, x1, y1);
 
 		s.setOffset(-xScroll, -yScroll);
 
 		renderTiles(s, x0, y0, x1, y1);
 
-		for (Entity e : entities/*visibleEntities*/) {
+		for (Entity e : visibleEntities) {
 			e.render(s);
 		}
 
-		//renderTopOfWalls(s, x0, y0, x1, y1);
+		//renderTopOfWalls(s, x0, y0, x1, y1); //TODO: allow for taller walls
 		
 		s.setOffset(0, 0);
 		
@@ -274,10 +285,7 @@ public class Level {
 			result.add(t);
 		}
 		
-		Set<Entity> visibleEntities = new TreeSet<Entity>(new EntityComparator());//getEntities(new Rect(x,y,0,0));
-		for (Entity ent : entityMap[x + y * width]) {
-			result.add(ent);
-		}
+		Set<Entity> visibleEntities = getEntities(new Rect(x,y,0,0));
 		
 		for (Entity ee : visibleEntities) {
 			if (ee != e && ee.blocks(e)) {
@@ -303,11 +311,15 @@ public class Level {
 		return getEntities(x0, y0, x1, y1, new EntityCollidesAndInstanceOf(c));
 	}
 
-	public Set<Entity> getEntities(double xx0, double yy0, double xx1, double yy1, CollidablePredicate<Entity> predicate) {
-		final int x0 = Math.max((int) (xx0) / Tile.WIDTH, 0);
-		final int x1 = Math.min((int) (xx1) / Tile.WIDTH, width - 1);
-		final int y0 = Math.max((int) (yy0) / Tile.HEIGHT, 0);
-		final int y1 = Math.min((int) (yy1) / Tile.HEIGHT, height - 1);
+	public Set<Entity> getEntities(int x0, int y0, int x1, int y1, CollidablePredicate<Entity> predicate) {
+		if(x0 < 0) x0 = 0;
+		if(y0 < 0) y0 = 0;
+		if(x1 < 0) x1 = 0;
+		if(y1 < 0) y1 = 0;
+		if(x0 >= width) x0 = width - 1;
+		if(y0 >= height) y0 = height - 1;
+		if(x1 >= width) x1 = width - 1;
+		if(y1 >= height) y1 = height - 1;
 
 		final Set<Entity> result = new TreeSet<Entity>(new EntityComparator());
 

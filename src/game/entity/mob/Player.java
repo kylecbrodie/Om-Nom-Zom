@@ -41,20 +41,40 @@ public class Player extends Zombie {
 			move(dir = Direction.SOUTH);
 		} else if(keys.left.wasPressed()) {
 			move(dir = Direction.WEST);
+		}else if(keys.up.isDown) {
+			if(ticksElapsed % 20 == 0) {
+				move(dir = Direction.NORTH);
+			}
+		} else if(keys.right.isDown) {
+			if(ticksElapsed % 20 == 0) {
+				move(dir = Direction.EAST);
+			}
+		} else if(keys.down.isDown) {
+			if(ticksElapsed % 20 == 0) {
+				move(dir = Direction.SOUTH);
+			}
+		} else if(keys.left.isDown) {
+			if(ticksElapsed % 20 == 0) {
+				move(dir = Direction.WEST);
+			}
 		}
+		
 		if(keys.attack.wasPressed()) {
 			move(dir);
 			move(dir);
 		}
 		
-		if(ticksElapsed > 12) {
-			ticksElapsed = 0;
-			frame++;
-			if(frame >= Art.player[dir].length) {
-				frame = 0;
-			}
-		}
 		ticksElapsed++;
+		if (ticksElapsed > 60 * 30) {
+			ticksElapsed = 0;
+		}
+	}
+	
+	public void nextFrame() {
+		frame++;
+		if(frame >= Art.player[dir].length) {
+			frame = 0;
+		}
 	}
 	
 	@Override
