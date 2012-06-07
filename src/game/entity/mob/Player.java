@@ -33,13 +33,13 @@ public class Player extends Mob {
 		} else if(keys.lookLeft.isDown) {
 			dir = Direction.WEST;
 		}
-		if(keys.up.isDown) {
+		if(keys.up.wasPressed()) {
 			move(dir = Direction.NORTH);
-		} else if(keys.right.isDown) {
+		} else if(keys.right.wasPressed()) {
 			move(dir = Direction.EAST);
-		} else if(keys.down.isDown) {
+		} else if(keys.down.wasPressed()) {
 			move(dir = Direction.SOUTH);
-		} else if(keys.left.isDown) {
+		} else if(keys.left.wasPressed()) {
 			move(dir = Direction.WEST);
 		}
 	
