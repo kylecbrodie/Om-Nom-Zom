@@ -57,4 +57,44 @@ public final class Direction {
 		}
 		return -1;
 	}
+	
+	/**
+	 * Returns the offset the denotes the direction of this vector or
+	 * Integer.MIN_NUMBER if this vector has an invalid direction.
+	 * 
+	 * @return ^ see above
+	 */
+	public final static int getXOffset(int dir) {
+		switch (dir) {
+		case Direction.NORTH:
+			return 0;
+		case Direction.EAST:
+			return +1;
+		case Direction.SOUTH:
+			return 0;
+		case Direction.WEST:
+			return -1;
+		}
+		return Integer.MIN_VALUE;
+	}
+	
+	/**
+	 * Returns the offset the denotes the direction of this vector or
+	 * Integer.MIN_NUMBER if this vector has an invalid direction.
+	 * 
+	 * @return ^ see above
+	 */
+	public final static int getYOffset(int dir) {
+		switch (dir) {
+		case Direction.NORTH:
+			return -1;
+		case Direction.EAST:
+			return 0;
+		case Direction.SOUTH:
+			return +1;
+		case Direction.WEST:
+			return 0;
+		}
+		return Integer.MIN_VALUE;
+	}
 }

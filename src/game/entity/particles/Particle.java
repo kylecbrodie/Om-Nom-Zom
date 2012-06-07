@@ -13,6 +13,7 @@ import game.gfx.Screen;
  */
 public class Particle extends Entity {
 
+	private double x, y;
 	public double xa, ya, za;
 	public double z;
 	public int life;

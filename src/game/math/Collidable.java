@@ -17,8 +17,6 @@ public interface Collidable {
 	 *            the intersecting Entity
 	 * @param dir
 	 *            the direction of the Entity
-	 * @param vel
-	 *            the velocity of the Entity
 	 */
-	public void handleCollision(Entity e, int dir, double vel);
+	public void handleCollision(Entity e, int dir);
 }

@@ -38,6 +38,6 @@ public abstract class Tile implements Collidable {
 	}
 
 	@Override
-	public void handleCollision(Entity e, int dir, double vel) {
+	public void handleCollision(Entity e, int dir) {
 	}
 }

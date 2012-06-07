@@ -16,7 +16,6 @@ public class Player extends Mob {
 	private Keys keys;
 	private int frame = 0;
 	private int ticksElapsed = 0;
-	private static final double SPEED = 0.5;
 	
 	public Player(int x, int y, Keys keys) {
 		super(x,y);
@@ -25,28 +24,29 @@ public class Player extends Mob {
 
 	@Override
 	public void tick() {
-		super.tick();
+		if(keys.lookUp.isDown) {
+			dir = Direction.NORTH;
+		} else if(keys.lookRight.isDown) {
+			dir = Direction.EAST;
+		} else if(keys.lookDown.isDown) {
+			dir = Direction.SOUTH;
+		} else if(keys.lookLeft.isDown) {
+			dir = Direction.WEST;
+		}
 		if(keys.up.isDown) {
-			dir.dir = Direction.NORTH;
-		}
-		if(keys.right.isDown) {
-			dir.dir = Direction.EAST;
-		}
-		if(keys.down.isDown) {
-			dir.dir = Direction.SOUTH;
-		}
-		if(keys.left.isDown) {
-			dir.dir = Direction.WEST;
-		}
-		
-		if(!moving()) {
-			move(dir.dir, SPEED);
+			move(dir = Direction.NORTH);
+		} else if(keys.right.isDown) {
+			move(dir = Direction.EAST);
+		} else if(keys.down.isDown) {
+			move(dir = Direction.SOUTH);
+		} else if(keys.left.isDown) {
+			move(dir = Direction.WEST);
 		}
 	
 		if(ticksElapsed > 12) {
 			ticksElapsed = 0;
 			frame++;
-			if(frame >= Art.entityFillerAni[dir.dir].length) {
+			if(frame >= Art.entityFillerAni[dir].length) {
 				frame = 0;
 			}
 		}
@@ -56,6 +56,6 @@ public class Player extends Mob {
 	@Override
 	public void render(Screen s) {
 		Vector2d pos = getDrawPos();
-		s.draw(Art.entityFillerAni[frame][dir.dir], pos.x, pos.y);
+		s.draw(Art.entityFillerAni[frame][dir], pos.x, pos.y);
 	}
 }
