@@ -2,6 +2,7 @@ package game.gfx;
 
 import game.math.Rect;
 
+import java.awt.Color;
 import java.util.Arrays;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Arrays;
 public class Bitmap implements Cloneable {
 
 	protected int[] pixels;
-	protected int w, h;
+	protected final int w, h;
 
 	public Bitmap(int w, int h) {
 		this.w = w;
@@ -47,13 +48,12 @@ public class Bitmap implements Cloneable {
 	
 	@Override
 	public Bitmap clone() {
-		Bitmap copy = new Bitmap(this.w, this.h);
-		copy.pixels = this.pixels.clone();
+		Bitmap copy = new Bitmap(this.w, this.h, this.pixels.clone());
 		return copy;
 	}
 	
 	public void clear() {
-		clear(0xffffffff);
+		clear(Color.white.getRGB());
 	}
 
 	public void clear(int color) {
@@ -67,20 +67,22 @@ public class Bitmap implements Cloneable {
 	public int getHeight() {
 		return h;
 	}
-
-	public int getPixel(int i) {
+	
+	public int getPixel(int x, int y) {
+		int i = x + y * w;
 		if (i >= 0 && i < pixels.length) {
 			return pixels[i];
 		}
 		return -1;
 	}
-
-	public void setPixel(int i, int color) {
+	
+	private void setPixel(int x, int y, int color) {
+		int i = x + y * w;
 		if (i >= 0 && i < pixels.length) {
 			pixels[i] = color;
 		}
 	}
-
+	
 	public int size() {
 		return pixels.length;
 	}
@@ -166,35 +168,6 @@ public class Bitmap implements Cloneable {
 		}
 	}
 
-	public void drawAlpha(Bitmap bm, int x, int y, int alpha) {
-		if (alpha == 255) {
-			draw(bm, x, y);
-			return;
-		}
-
-		Rect drawArea = new Rect(x, y, bm.w, bm.h);
-		adjustDrawArea(drawArea);
-
-		int drawWidth = drawArea.x1 - drawArea.x0;
-
-		for (int yy = drawArea.y0; yy < drawArea.y1; yy++) {
-			int tp = yy * w + drawArea.x0;
-			int sp = (yy - y) * bm.w + (drawArea.x0 - x);
-			for (int xx = 0; xx < drawWidth; xx++) {
-				int col = bm.pixels[sp + xx];
-				if (col < 0) {
-
-					int r = (col & 0xff0000);
-					int g = (col & 0xff00);
-					int b = (col & 0xff);
-					col = (alpha << 24) | r | g | b;
-					int color = pixels[tp + xx];
-					pixels[tp + xx] = this.blendPixels(color, col);
-				}
-			}
-		}
-	}
-
 	public void drawColor(Bitmap bm, int x, int y, int color) {
 		Rect drawArea = new Rect(x, y, bm.w, bm.h);
 		adjustDrawArea(drawArea);
@@ -227,33 +200,47 @@ public class Bitmap implements Cloneable {
 		}
 	}
 	
-	public void fill(int x, int y, int width, int height, int color) {
+	public void drawAlpha(Bitmap bm, int x, int y, int alpha) {
+		if (alpha == 255) {
+			draw(bm, x, y);
+			return;
+		}
 
-		Rect drawArea = new Rect(x, y, width, height);
+		Rect drawArea = new Rect(x, y, bm.w, bm.h);
 		adjustDrawArea(drawArea);
 
 		int drawWidth = drawArea.x1 - drawArea.x0;
 
 		for (int yy = drawArea.y0; yy < drawArea.y1; yy++) {
 			int tp = yy * w + drawArea.x0;
+			int sp = (yy - y) * bm.w + (drawArea.x0 - x);
 			for (int xx = 0; xx < drawWidth; xx++) {
-				pixels[tp + xx] = color;
+				int col = bm.pixels[sp + xx];
+				if (col < 0) {
+
+					int r = (col & 0xff0000);
+					int g = (col & 0xff00);
+					int b = (col & 0xff);
+					col = (alpha << 24) | r | g | b;
+					int color = pixels[tp + xx];
+					pixels[tp + xx] = this.blendPixels(color, col);
+				}
 			}
 		}
 	}
-
-	public void fillAlpha(int x, int y, int width, int height, int color, int alpha) {
-		if (alpha == 255) {
-			fill(x, y, width, height, color);
-			return;
+	
+	public void drawHorizonalLine(int x1, int x2, int y, int color) {
+		if (x1 > x2) {
+			int xx = x1;
+			x1 = x2;
+			x2 = xx;
 		}
 
-		Bitmap bmp = new Bitmap(width, height);
-		bmp.fill(0, 0, width, height, color);
-
-		this.drawAlpha(bmp, x, y, alpha);
+		for (int xx = x1; xx <= x2; xx++) {
+			setPixel(xx, y, color);
+		}
 	}
-
+	
 	public void drawRect(int x, int y, int bw, int bh, int color) {
 		int x0 = x;
 		int x1 = x + bw;
@@ -282,14 +269,8 @@ public class Bitmap implements Cloneable {
 			setPixel(xx, y1 - 1, color);
 		}
 	}
-
-	private void setPixel(int x, int y, int color) {
-		pixels[x + y * w] = color;
-
-	}
-
-	@SuppressWarnings("unused")
-	private void drawCircle(int centerX, int centerY, int radius, int color) {
+	
+	public void drawCircle(int centerX, int centerY, int radius, int color) {
 		int d = 3 - (2 * radius);
 		int x = 0;
 		int y = radius;
@@ -313,6 +294,33 @@ public class Bitmap implements Cloneable {
 			x++;
 		} while (x <= y);
 	}
+	
+	public void fill(int x, int y, int width, int height, int color) {
+
+		Rect drawArea = new Rect(x, y, width, height);
+		adjustDrawArea(drawArea);
+
+		int drawWidth = drawArea.x1 - drawArea.x0;
+
+		for (int yy = drawArea.y0; yy < drawArea.y1; yy++) {
+			int tp = yy * w + drawArea.x0;
+			for (int xx = 0; xx < drawWidth; xx++) {
+				pixels[tp + xx] = color;
+			}
+		}
+	}
+
+	public void fillAlpha(int x, int y, int width, int height, int color, int alpha) {
+		if (alpha == 255) {
+			fill(x, y, width, height, color);
+			return;
+		}
+
+		Bitmap bmp = new Bitmap(width, height);
+		bmp.fill(0, 0, width, height, color);
+
+		this.drawAlpha(bmp, x, y, alpha);
+	}
 
 	public void fillCircle(int centerX, int centerY, int radius, int color) {
 		int d = 3 - (2 * radius);
@@ -334,19 +342,7 @@ public class Bitmap implements Cloneable {
 			x++;
 		} while (x <= y);
 	}
-
-	private void drawHorizonalLine(int x1, int x2, int y, int color) {
-		if (x1 > x2) {
-			int xx = x1;
-			x1 = x2;
-			x2 = xx;
-		}
-
-		for (int xx = x1; xx <= x2; xx++) {
-			setPixel(xx, y, color);
-		}
-	}
-
+	
 	public Bitmap shrink() {
 		Bitmap newbmp = new Bitmap(w / 2, h / 2);
 		int[] pix = pixels;

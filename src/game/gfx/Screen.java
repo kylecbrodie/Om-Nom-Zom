@@ -1,12 +1,13 @@
 package game.gfx;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
 public class Screen extends Bitmap {
 
-	public BufferedImage image;
-	protected int xOffset, yOffset;
+	public final BufferedImage image;
+	private int xOffset, yOffset;
 
 	public Screen(int w, int h) {
 		super(w, h);
@@ -18,22 +19,77 @@ public class Screen extends Bitmap {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
 	}
-
+	
+	@Override
+	public int getPixel(int x, int y) {
+		return super.getPixel(x + xOffset, y + yOffset);
+	}
+	
 	public void draw(Bitmap bm, double x, double y) {
 		draw(bm, (int) x, (int) y);
+	}
+	
+	@Override
+	public void draw(Bitmap bm, int x, int y) {
+		super.draw(bm, x + xOffset, y + yOffset);
+	}
+	
+	@Override
+	public void draw(Bitmap bm, int x, int y, int width, int height) {
+		super.draw(bm, x + xOffset, y + yOffset, width, height);
 	}
 
 	public void drawColor(Bitmap bm, double x, double y, int color) {
 		drawColor(bm, (int) x, (int) y, color);
 	}
+	
+	@Override
+	public void drawColor(Bitmap bm, int x, int y, int color) {
+		super.drawColor(bm, x + xOffset, y + yOffset, color);
+	}
+	
+	@Override
+	public void drawAlpha(Bitmap bm, int x, int y, int alpha) {
+		super.drawAlpha(bm, x + xOffset, y + yOffset, alpha);
+	}
+	
+	@Override
+	public void drawHorizonalLine(int x1, int x2, int y, int color) {
+		super.drawHorizonalLine(x1 + xOffset, x2 + xOffset, y + yOffset, color);
+	}
+	
+	@Override
+	public void drawRect(int x, int y, int bw, int bh, int color) {
+		super.drawRect(x + xOffset, y + yOffset, bw, bh, color);
+	}
+	
+	@Override
+	public void drawCircle(int centerX, int centerY, int radius, int color) {
+		super.drawCircle(centerX + xOffset, centerY + yOffset, radius, color);
+	}
+	
+	@Override
+	public void fill(int x, int y, int width, int height, int color) {
+		super.fill(x + xOffset, y + yOffset, width, height, color);
+	}
+	
+	@Override
+	public void fillAlpha(int x, int y, int width, int height, int color, int alpha) {
+		super.fillAlpha(x + xOffset, y + yOffset, width, height, color, alpha);
+	}
+	
+	@Override
+	public void fillCircle(int centerX, int centerY, int radius, int color) {
+		super.fillCircle(centerX + xOffset, centerY + yOffset, radius, color);
+	}
 
-	public Bitmap rectangleBitmap(int x, int y, int x2, int y2, int color) {
-		Bitmap rect = new Bitmap(x2, y2);
-		rect.drawRect(x, y, x2, y2, color);
+	public Bitmap rectangleBitmap(int w, int h, int color) {
+		Bitmap rect = new Bitmap(w, h);
+		rect.drawRect(0, 0, w, h, color);
 		return rect;
 	}
 
-	/*public Bitmap tooltipBitmap(int width, int height) {
+	public Bitmap tooltipBitmap(int width, int height) {
 		int cRadius = 3;
 		int color = Color.black.getRGB();
 		Bitmap tooltip = new Bitmap(width + 3, height + 3);
@@ -46,5 +102,5 @@ public class Screen extends Bitmap {
 		tooltip.fillCircle(cRadius, height - cRadius - 1, cRadius, color);
 
 		return tooltip;
-	}*/
+	}
 }

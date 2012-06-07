@@ -1,147 +1,154 @@
 package game.entity;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import game.gfx.Screen;
 import game.level.Level;
-import game.math.BBOwner;
-import game.math.BoundingBox;
+import game.level.tile.Tile;
+import game.math.Collidable;
+import game.math.Direction;
+import game.math.DirectionalVector;
 import game.math.Vector2d;
+import game.math.Vector2i;
 
 /**
  * Base class of all things that move and are visible
  * 
  * @author Kyle Brodie
  */
-public abstract class Entity implements BBOwner {
+public abstract class Entity implements Collidable {
 
 	protected Random random = new Random();
 	protected Level level;
 	
-	protected double x, y;
-	public Vector2d radius = new Vector2d(10, 10);
+	/**
+	 * offset from the tile position on the range of [-16,16]
+	 * Allows for animation between tiles.
+	 */
+	protected double x = 0.0, y = 0.0;
 	
-	public boolean removed = false;
-	protected boolean physicsSlide = false;
-	public boolean isBlocking = true;
+	protected DirectionalVector dir = new DirectionalVector(Direction.NORTH, 0.0);
 	
 	/**
-	 * X tile initial and Y tile initial
+	 * Position on the level
 	 */
-	public int xto, yto;
+	protected int xTile, yTile;
 	
+	public boolean removed = false;
+	private boolean transitionMade = false;
+	
+	/**
+	 * is participating in collision detection
+	 */
+	public boolean isBlocking = true;
+
 	public void init(Level l) {
 		level = l;
 		init();
 	}
 	
+	/**
+	 * Initialization code goes here in subclasses
+	 */
 	public void init() {
 	}
 	
-	public abstract void tick();
-	
-	protected boolean move(double xa, double ya) {
-		List<BoundingBox> bbs = level.getClipBBs(this);
-		if (physicsSlide || (xa==0||ya==0)) {
-			boolean moved = false;
-			if (!removed)
-				moved |= partMove(bbs, xa, 0);
-			if (!removed)
-				moved |= partMove(bbs, 0, ya);
-			return moved;
-		} else {
-			boolean moved = true;
-			if (!removed)
-				moved &= partMove(bbs, xa, 0);
-			if (!removed)
-				moved &= partMove(bbs, 0, ya);
-			return moved;
+	/**
+	 * All game logic runs here
+	 */
+	public void tick() {
+		if (moving()) {
+			y += dir.getY();
+			x += dir.getX();
+			if(transitionMade) {
+				if(Double.compare(y, 0.0) == 0) {
+					y = 0;
+					x = 0;
+					dir.vel = 0;
+					transitionMade = false;
+				} else if(Double.compare(x, 0.0) == 0) {
+					x = 0;
+					y = 0;
+					dir.vel = 0;
+					transitionMade = false;
+				}
+			}
+			if (Math.abs(y) > 16 || Math.abs(x) > 16) {
+				commitMove();
+				transitionMade = true;
+			}
 		}
 	}
-
-	private boolean partMove(List<BoundingBox> bbs, double xa, double ya) {
-		double oxa = xa;
-		double oya = ya;
-		BoundingBox from = getBB();
-
-		BoundingBox closest = null;
-		double epsilon = 0.01;
-		for (int i = 0; i < bbs.size(); i++) {
-			BoundingBox to = bbs.get(i);
-			if (from.intersects(to))
-				continue;
-
-			if (ya == 0) {
-				if (to.y0 >= from.y1 || to.y1 <= from.y0)
-					continue;
-				if (xa > 0) {
-					double xrd = to.x0 - from.x1;
-					if (xrd >= 0 && xa > xrd) {
-						closest = to;
-						xa = xrd - epsilon;
-						if (xa < 0)
-							xa = 0;
-					}
-				} else if (xa < 0) {
-					double xld = to.x1 - from.x0;
-					if (xld <= 0 && xa < xld) {
-						closest = to;
-						xa = xld + epsilon;
-						if (xa > 0)
-							xa = 0;
-					}
-				}
-			}
-
-			if (xa == 0) {
-				if (to.x0 >= from.x1 || to.x1 <= from.x0)
-					continue;
-				if (ya > 0) {
-					double yrd = to.y0 - from.y1;
-					if (yrd >= 0 && ya > yrd) {
-						closest = to;
-						ya = yrd - epsilon;
-						if (ya < 0)
-							ya = 0;
-					}
-				} else if (ya < 0) {
-					double yld = to.y1 - from.y0;
-					if (yld <= 0 && ya < yld) {
-						closest = to;
-						ya = yld + epsilon;
-						if (ya > 0)
-							ya = 0;
-					}
+	
+	protected boolean moving() {
+		return dir.vel != 0;
+	}
+	
+	private final void commitMove() {
+		List<Collidable> colids = level.getCollidables(this, xTile + (int)dir.getX(), yTile + (int)dir.getY());
+		for(Iterator<Collidable> i = colids.iterator(); i.hasNext();) {
+			Collidable next = i.next();
+			if(next instanceof Entity) {
+				Entity e = (Entity)next;
+				if(e.blocks(this)) { //cannot move forward
+					handleCollision(e, e.dir.dir, e.dir.vel);
+					dir.vel = 0.0;
+					return;
 				}
 			}
 		}
-		if (closest != null && closest.owner != null) {
-			closest.owner.handleCollision(this, oxa, oya);
+		level.moveEntity(this, xTile + dir.getXOffset(), yTile + dir.getYOffset());
+		System.out.println("entity moved");
+		y = -y;
+		y += (y > 0) ? -1 : 1;
+		x = -x--;
+		x += (x > 0) ? -1 : 1;
+	}
+	
+	/**
+	 * 
+	 * @param dir directions from the Facing class
+	 * @param vel 
+	 * @return if the move was successfully started.
+	 */
+	protected boolean move(int dir, double vel) {
+		List<Collidable> colids = level.getCollidables(this, xTile + (int)this.dir.getX(), yTile + (int)this.dir.getY());
+		boolean moved = false;
+		if(colids == null) {
+			return moved;
 		}
-		if (xa != 0 || ya != 0) {
-			x += xa;
-			y += ya;
-			return true;
+		for(Iterator<Collidable> i = colids.iterator(); i.hasNext();) {
+			Collidable next = i.next();
+			if(next instanceof Tile) {
+				Tile t = (Tile) next;
+				if(!t.canPass(this)) {
+					return moved;
+				}
+			}
+			if(next instanceof Entity) {
+				Entity e = (Entity) next;
+				if(e.dir.vel != 0) {
+					if(e.dir.dir == Direction.getOpposite(this.dir.dir)) {
+						handleCollision(e, e.dir.dir, e.dir.vel);
+					}
+				}
+			}
 		}
-		return false;
+		
+		this.dir.vel = vel;
+		this.dir.dir = dir;
+		return true;
 	}
 	
 	public abstract void render(Screen s);
-	
-	public BoundingBox getBB() {
-		return new BoundingBox(this, x - radius.x, y - radius.y, x + radius.x, y + radius.y);
-	}
-
-	public boolean intersects(double x0, double y0, double x1, double y1) {
-		return getBB().intersects(x0, y0, x1, y1);
-	}
 
 	@Override
-	public void handleCollision(Entity entity, double xa, double ya) {
-		if (this.blocks(entity)) {
-			this.collide(entity, xa, ya);
-			entity.collide(this, -xa, -ya);
+	public void handleCollision(Entity e, int dir, double vel) {
+		if (this.blocks(e)) {
+			this.collide(e, dir, vel);
+			e.collide(this, this.dir.dir, this.dir.dir);
 		}
 	}
 	
@@ -153,29 +160,60 @@ public abstract class Entity implements BBOwner {
 		return true;
 	}
 
-	public void collide(Entity entity, double xa, double ya) {
+	/**
+	 * Called when a collision occurs
+	 * 
+	 * @param entity the entity you are colliding with
+	 * @param dir their direction
+	 * @param vel their velocity
+	 */
+	public void collide(Entity entity, int dir, double vel) {
 	}
 	
-	public void setPos(double x, double y) {
-		this.x = x;
-		this.y = y;
+	/**
+	 * Sets the Tile that this entity resides on
+	 * 
+	 * @param x pos of tile
+	 * @param y pos of tile
+	 */
+	public void setPos(int x, int y) {
+		xTile = x;
+		yTile = y;
 	}
 	
-	public void setPos(Vector2d pos) {
+	/**
+	 * Sets the Tile that this entity resides on
+	 * 
+	 * @param pos vector of the tile position
+	 */
+	public void setPos(Vector2i pos) {
 		if(pos != null) {
 			x = pos.x;
 	    	y = pos.y;
 		}
     }
 	
-	public void setSize(int xr, int yr) {
-		radius = new Vector2d(xr, yr);
+	/**
+	 * Returns the Tile position of this entity
+	 * @return {@link Vector2i} of the position
+	 */
+	public Vector2i getPos() {
+		return new Vector2i(xTile, yTile);
 	}
 	
-	public Vector2d getPos() {
-		return new Vector2d(x,y);
+	/**
+	 * Gets the double position of the entity. This will differ from getPos()
+	 * when the entity is in the middle of an animation.
+	 * 
+	 * @return current drawing position
+	 */
+	public Vector2d getDrawPos() {
+		return new Vector2d(xTile * Tile.WIDTH + x, yTile * Tile.HEIGHT * y);
 	}
 	
+	/**
+	 * Removes the entity from the game.
+	 */
 	public void remove() {
 		removed = true;
 	}

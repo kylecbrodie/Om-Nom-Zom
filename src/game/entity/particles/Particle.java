@@ -1,6 +1,3 @@
-/**
- * 
- */
 package game.entity.particles;
 
 import game.entity.Entity;
@@ -21,6 +18,15 @@ public class Particle extends Entity {
 	public int life;
 	private Bitmap b;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param x absolute screen location
+	 * @param y absolute screen location
+	 * @param xa x-velocity
+	 * @param ya y-velocity
+	 * @param bm the bitmap to look like.
+	 */
 	public Particle(double x, double y, double xa, double ya, Bitmap bm) {
 		this.x = x;
 		this.y = y;
@@ -28,9 +34,6 @@ public class Particle extends Entity {
 		this.xa = xa * pow;
 		this.ya = ya * pow;
 		this.za = random.nextDouble() * 2 + 1.0;
-		this.setSize(2, 2);
-		physicsSlide = false;
-		isBlocking = false;
 		life = random.nextInt(20) + 50;
 		
 		b = new Bitmap(4,4);
@@ -42,12 +45,12 @@ public class Particle extends Entity {
 		int g = random.nextInt(0x0000FF00) & 0x0000FF00;
 		int b = random.nextInt(0x000000FF) & 0x000000FF;
 		return 0xFF000000 | r | g | b;
-		
 	}
 
 	@Override
 	public void tick() {
-		move(xa, ya);
+		x += xa;
+		y += ya;
 		z += za;
 		if (z < 0) {
 			z = 0;

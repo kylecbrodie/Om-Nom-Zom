@@ -4,9 +4,12 @@ import game.gfx.Screen;
 
 /**
  * @author Kyle Brodie
- *
  */
 public class Human extends Mob {
+
+	public Human(int x, int y) {
+		super(x, y);
+	}
 
 	@Override
 	public void tick() {
@@ -19,5 +22,4 @@ public class Human extends Mob {
 		// TODO implement
 		
 	}
-
 }

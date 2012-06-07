@@ -15,7 +15,7 @@ import game.entity.Entity;
  * 
  * @author Catacomb-Snatch Project (http://www.catacombsnatch.net/)
  */
-public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
+public class EntityCollidesAndInstanceOf implements CollidablePredicate<Entity> {
 	
 	private final Collection<Class<? extends Entity>> entityClasses;
 
@@ -24,7 +24,7 @@ public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
 	 * class1 and intersects the bb.
 	 * @param class1 first class to consider
 	 */
-	public EntityIntersectsBBAndInstanceOf(Class<? extends Entity> class1) {
+	public EntityCollidesAndInstanceOf(Class<? extends Entity> class1) {
 		this.entityClasses = new HashSet<Class<? extends Entity>>();
 		this.entityClasses.add(class1);
 	}
@@ -37,16 +37,16 @@ public class EntityIntersectsBBAndInstanceOf implements BBPredicate<Entity> {
 	 *            The Entity has to be an instance of one class in this list of
 	 *            classes
 	 */
-	public EntityIntersectsBBAndInstanceOf(Class<? extends Entity>... classes) {
+	public EntityCollidesAndInstanceOf(Class<? extends Entity>... classes) {
 		this.entityClasses = new HashSet<Class<? extends Entity>>();
 		entityClasses.addAll(Arrays.asList(classes));
 	}
 
 	@Override
-	public boolean appliesTo(Entity item, double x0, double y0, double x1, double y1) {
+	public boolean appliesTo(Entity item) {
 		for (final Class<? extends Entity> entityClass : entityClasses) {
 			if (entityClass.isInstance(item)) {
-				return EntityIntersectsBB.INSTANCE.appliesTo(item, x0, y0, x1, y1);
+				return EntityCollides.INSTANCE.appliesTo(item);
 			}
 		}
 		return false;

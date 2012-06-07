@@ -1,17 +1,19 @@
 package game.level;
 
 import game.entity.Entity;
+import game.gfx.Art;
 import game.gfx.Screen;
 import game.level.tile.FloorTile;
 import game.level.tile.Tile;
-import game.math.BoundingBox;
+import game.math.Collidable;
+import game.math.Rect;
 import game.math.Vector2d;
-import game.math.predicates.BBPredicate;
-import game.math.predicates.EntityIntersectsBB;
-import game.math.predicates.EntityIntersectsBBAndInstanceOf;
+import game.math.Vector2i;
+import game.math.predicates.CollidablePredicate;
+import game.math.predicates.EntityCollides;
+import game.math.predicates.EntityCollidesAndInstanceOf;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +37,7 @@ public class Level {
 	
 	@SuppressWarnings("unchecked")
 	public Level(int width, int height) {
+		//TODO: add minimap code
 		this.width = width;
 		this.height = height;
 		neighbourOffsets = new int[] { -1, 1, -width, -width + 1, -width - 1, width, width + 1, width - 1 };
@@ -123,14 +126,6 @@ public class Level {
 			Entity e = entities.get(i);
 			if (!e.removed) {
 				e.tick();
-
-				Vector2d pos = e.getPos();
-				int xtn = (int) (pos.x - e.radius.x) / Tile.WIDTH;
-				int ytn = (int) (pos.y - e.radius.y) / Tile.HEIGHT;
-				if (xtn != e.xto || ytn != e.yto) {
-					removeFromEntityMap(e);
-					insertToEntityMap(e);
-				}
 			}
 			if (e.removed) {
 				entities.remove(i--);
@@ -139,119 +134,160 @@ public class Level {
 		}
 	}
 	
-	public void render(Screen s) {
-		for(LinkedList<Tile> list : map) {
-			for(Iterator<Tile> iter = list.iterator(); iter.hasNext();) {
-				iter.next().render(s);
-			}
+	public boolean moveEntity(Entity e, int x, int y) {
+		if(x < 0 || x >= width) {
+			return false;
 		}
-		for(Entity e : entities) {
+		if(y < 0 || y >= height) {
+			return false;
+		}
+		removeFromEntityMap(e);
+		insertToEntityMap(e, x, y);
+		return true;
+	}
+	
+	private void updateMinimap() {
+		// TODO implement
+	}
+	
+	public void render(Screen s, int xScroll, int yScroll) {
+		int x0 = xScroll / Tile.WIDTH;
+		int y0 = yScroll / Tile.HEIGHT;
+		int x1 = (xScroll + s.getWidth()) / Tile.WIDTH;
+		int y1 = (yScroll + s.getHeight()) / Tile.HEIGHT;
+		if (xScroll < 0) {
+			x0--;
+		}
+		if (yScroll < 0) {
+			y0--;
+		}
+
+		//Set<Entity> visibleEntities = getEntities(xScroll - Tile.WIDTH, yScroll - Tile.HEIGHT, xScroll + s.getWidth() + Tile.WIDTH, yScroll + s.getHeight() + Tile.HEIGHT);
+
+		s.setOffset(-xScroll, -yScroll);
+
+		renderTiles(s, x0, y0, x1, y1);
+
+		for (Entity e : entities/*visibleEntities*/) {
 			e.render(s);
+		}
+
+		//renderTopOfWalls(s, x0, y0, x1, y1);
+		
+		s.setOffset(0, 0);
+		
+		updateMinimap();
+		renderHUDAndMinimap(s, x0, y0);
+	}
+
+	private void renderTiles(Screen s, int x0, int y0, int x1, int y1) {
+		// go through each currently visible cell
+		for (int y = y0; y <= y1; y++) {
+			for (int x = x0; x <= x1; x++) {
+
+				// draw floor outside the level
+				if (x < 0 || x >= width || y < 0 || y >= height) {
+					s.draw(Art.floorTile, x * Tile.WIDTH, y * Tile.HEIGHT);
+					continue;
+				}
+				
+				int tilesIndex = x + y * width;
+				
+				if (tilesIndex >= 0 && tilesIndex < map.length) {
+					
+					for (int i = 0; i < map[tilesIndex].size(); i++) {
+						map[tilesIndex].get(i).render(s);
+					}
+				}
+			}
 		}
 	}
 	
+	private void renderHUDAndMinimap(Screen s, int x0, int y0) {
+		// TODO implement
+	}
+
 	public void addEntity(Entity e) {
 		e.init(this);
 		entities.add(e);
-		insertToEntityMap(e);
+		Vector2i pos = e.getPos();
+		insertToEntityMap(e, pos.x, pos.y);
 	}
 	
 	public void removeEntity(Entity e) {
 		e.removed = true;
 	}
 	
-	public void insertToEntityMap(Entity e) {
-		Vector2d pos = e.getPos();
-		e.xto = (int) (pos.x - e.radius.x) / Tile.WIDTH;
-		e.yto = (int) (pos.y - e.radius.y) / Tile.HEIGHT;
-
-		int x1 = e.xto + (int) (e.radius.x * 2 + 1) / Tile.WIDTH;
-		int y1 = e.yto + (int) (e.radius.y * 2 + 1) / Tile.HEIGHT;
-
-		for (int y = e.yto; y <= y1; y++) {
-			if (y < 0 || y >= height) {
-				continue;
-			}
-			for (int x = e.xto; x <= x1; x++) {
-				if (x < 0 || x >= width) {
-					continue;
-				}
-				entityMap[x + y * width].add(e);
-			}
+	public void insertToEntityMap(Entity e, int x, int y) {
+		e.setPos(x, y);
+		int index = x + y * width;
+		if(index >= 0 && index < entityMap.length) {
+			entityMap[index].add(e);
 		}
 	}
 
 	public void removeFromEntityMap(Entity e) {
-		int x1 = e.xto + (int) (e.radius.x * 2 + 1) / Tile.WIDTH;
-		int y1 = e.yto + (int) (e.radius.y * 2 + 1) / Tile.HEIGHT;
-
-		for (int y = e.yto; y <= y1; y++) {
-			if (y < 0 || y >= height) {
-				continue;
-			}
-			for (int x = e.xto; x <= x1; x++) {
-				if (x < 0 || x >= width) {
-					continue;
-				}
-				entityMap[x + y * width].remove(e);
-			}
+		Vector2i pos = e.getPos();
+		int index = pos.x + pos.y * width;
+		if(index >= 0 && index < entityMap.length) {
+			entityMap[index].remove(e);
 		}
 	}
 	
-	public List<BoundingBox> getClipBBs(Entity e) {
-		List<BoundingBox> result = new ArrayList<BoundingBox>();
-		BoundingBox bb = e.getBB().grow(Tile.WIDTH);
-
-		int x0 = (int) (bb.x0 / Tile.WIDTH);
-		int y0 = (int) (bb.y0 / Tile.HEIGHT);
-		int x1 = (int) (bb.x1 / Tile.WIDTH);
-		int y1 = (int) (bb.y1 / Tile.HEIGHT);
-
-		//Level edge barriers
-		result.add(new BoundingBox(null, 0, 0, 0, height * Tile.HEIGHT));
-		result.add(new BoundingBox(null, 0, 0, width * Tile.WIDTH, 0));
-		result.add(new BoundingBox(null, width * Tile.WIDTH, 0, width * Tile.WIDTH, height * Tile.HEIGHT));
-		result.add(new BoundingBox(null, 0, height * Tile.HEIGHT, width * Tile.WIDTH, height * Tile.HEIGHT));
-
-		for (int y = y0; y <= y1; y++) {
-			if (y < 0 || y >= height) {
-				continue;
-			}
-			for (int x = x0; x <= x1; x++) {
-				if (x < 0 || x >= width) {
-					continue;
-				}
-				getTile(x, y).addClipBBs(result, e);
-			}
+	/**
+	 * Returns all entities and tiles at the tile (x,y) that will collide with
+	 * the provided entity
+	 * 
+	 * @param e
+	 *            the entity that is requesting the collidables to see if
+	 *            certain other entities block it in particular
+	 * @param x
+	 *            tile loc
+	 * @param y
+	 *            tile loc
+	 * @return All collidable objects in the next tile or null if the tile is
+	 *         not in the level.
+	 */
+	public List<Collidable> getCollidables(Entity e, int x, int y) {
+		
+		List<Collidable> result = new ArrayList<Collidable>();
+		Tile t = getTile(x, y);
+		
+		//Level edge
+		if(t == null) {
+			return null;
 		}
-
-		Set<Entity> visibleEntities = getEntities(bb);
+		
+		if(!t.canPass(e)) {
+			result.add(t);
+		}
+		
+		Set<Entity> visibleEntities = getEntities(new Rect(x,y,0,0));
 		for (Entity ee : visibleEntities) {
 			if (ee != e && ee.blocks(e)) {
-				result.add(ee.getBB());
+				result.add(ee);
 			}
 		}
-
 		return result;
 	}
 	
-	public Set<Entity> getEntities(BoundingBox bb) {
-		return getEntities(bb.x0, bb.y0, bb.x1, bb.y1);
+	public Set<Entity> getEntities(Rect r) {
+		return getEntities(r.x0, r.y0, r.x1, r.y1);
 	}
 	
-	public Set<Entity> getEntities(BoundingBox bb, Class<? extends Entity> c) {
-		return getEntities(bb.x0, bb.y0, bb.x1, bb.y1, c);
+	public Set<Entity> getEntities(Rect r, Class<? extends Entity> c) {
+		return getEntities(r.x0, r.y0, r.x1, r.y1, c);
 	}
 
-	public Set<Entity> getEntities(double x0, double y0, double x1, double y1) {
-		return getEntities(x0, y0, x1, y1, EntityIntersectsBB.INSTANCE);
+	public Set<Entity> getEntities(int x0, int y0, int x1, int y1) {
+		return getEntities(x0, y0, x1, y1, EntityCollides.INSTANCE);
 	}
 
-	public Set<Entity> getEntities(double x0, double y0, double x1, double y1, Class<? extends Entity> c) {
-		return getEntities(x0, y0, x1, y1, new EntityIntersectsBBAndInstanceOf(c));
+	public Set<Entity> getEntities(int x0, int y0, int x1, int y1, Class<? extends Entity> c) {
+		return getEntities(x0, y0, x1, y1, new EntityCollidesAndInstanceOf(c));
 	}
 
-	public Set<Entity> getEntities(double xx0, double yy0, double xx1, double yy1, BBPredicate<Entity> predicate) {
+	public Set<Entity> getEntities(double xx0, double yy0, double xx1, double yy1, CollidablePredicate<Entity> predicate) {
 		final int x0 = Math.max((int) (xx0) / Tile.WIDTH, 0);
 		final int x1 = Math.min((int) (xx1) / Tile.WIDTH, width - 1);
 		final int y0 = Math.max((int) (yy0) / Tile.HEIGHT, 0);
@@ -262,7 +298,7 @@ public class Level {
 		for (int y = y0; y <= y1; y++) {
 			for (int x = x0; x <= x1; x++) {
 				for (Entity e : entityMap[x + y * width]) {
-					if (predicate.appliesTo(e, xx0, yy0, xx1, yy1)) {
+					if (predicate.appliesTo(e)) {
 						result.add(e);
 					}
 				}
