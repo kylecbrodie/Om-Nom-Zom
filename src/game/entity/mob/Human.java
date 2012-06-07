@@ -17,29 +17,31 @@ public class Human extends Mob {
 	public Human(int x, int y) {
 		super(x, y);
 		male = random.nextBoolean();
-		dirChangeTime = random.nextInt(3) * 60 + 31;
+		dirChangeTime = random.nextInt(3) * 60 + 60;
 	}
 
 	@Override
 	public void tick() {
-		if(ticksElapsed > dirChangeTime) {
-			ticksElapsed = 0;
+		if(ticksElapsed % dirChangeTime == 0) {
 			dir = random.nextInt(4);
 		}
 		
-		if(ticksElapsed > 30) {
+		if(ticksElapsed % 60 == 0) {
 			if(!move(dir)) {
 				dir = Direction.getOpposite(dir);
 			}
 		}
 		
-		if(ticksElapsed > 12) {
+		if(ticksElapsed % 30 == 0) {
 			frame++;
 			if(frame >= Art.human_male[dir].length) {
 				frame = 0;
 			}
 		}
 		ticksElapsed++;
+		if (ticksElapsed > 60 * 30) {
+			ticksElapsed = 0;
+		}
 	}
 
 	@Override

@@ -11,7 +11,7 @@ import game.math.Vector2d;
  * 
  * @author Kyle Brodie
  */
-public class Player extends Mob {
+public class Player extends Zombie {
 
 	private Keys keys;
 	private int frame = 0;
@@ -42,6 +42,10 @@ public class Player extends Mob {
 		} else if(keys.left.wasPressed()) {
 			move(dir = Direction.WEST);
 		}
+		if(keys.attack.wasPressed()) {
+			move(dir);
+			move(dir);
+		}
 		
 		if(ticksElapsed > 12) {
 			ticksElapsed = 0;
@@ -52,23 +56,7 @@ public class Player extends Mob {
 		}
 		ticksElapsed++;
 	}
-	public void collide(Entity entity, double xa, double ya)
-	{
-		if (keys.attack.wasPressed()){
-			if (entity instanceof Human){
-				this.eat((Human) entity);
-			}
-		}
-		else{
-			System.out.println("Miss");
-			super.collide(entity,xa,ya);
-		}
-	}
-	public void eat(Human hum) {
-		Vector2i pos = hum.getPos();
-		hum.die();
-		level.addEntity(new Zombie(pos.x, pos.y));
-	}
+	
 	@Override
 	public void render(Screen s) {
 		Vector2d pos = getDrawPos();

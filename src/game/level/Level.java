@@ -274,7 +274,11 @@ public class Level {
 			result.add(t);
 		}
 		
-		Set<Entity> visibleEntities = getEntities(new Rect(x,y,0,0));
+		Set<Entity> visibleEntities = new TreeSet<Entity>(new EntityComparator());//getEntities(new Rect(x,y,0,0));
+		for (Entity ent : entityMap[x + y * width]) {
+			result.add(ent);
+		}
+		
 		for (Entity ee : visibleEntities) {
 			if (ee != e && ee.blocks(e)) {
 				result.add(ee);
