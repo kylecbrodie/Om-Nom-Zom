@@ -68,6 +68,18 @@ public class Level {
 		}
 	}
 	
+	public int getWidth() {
+		return width;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public int size() {
+		return width * height;
+	}
+	
 	/**
 	 * Changes the current active tile at xy to the given tile and updates the
 	 * surrounding tiles

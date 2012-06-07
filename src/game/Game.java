@@ -3,7 +3,7 @@ package game;
 import game.entity.mob.Player;
 import game.gfx.Screen;
 import game.level.Level;
-import game.level.tile.WallTile;
+import game.level.LevelUtils;
 import game.math.Vector2d;
 import game.math.Vector2i;
 
@@ -50,14 +50,11 @@ public class Game extends Canvas implements Runnable {
 	private void init() {
         running = true;
         screen = new Screen(GAME_WIDTH, GAME_HEIGHT);
-        level = new Level(64,64);
-        player = new Player(0,0,keys);
+        level = new Level(65,65);
+        player = new Player(1,1,keys);
+        LevelUtils.createDevLevel(level);
         level.addEntity(player);
-        level.setTile(10, 10, new WallTile());
-        level.setTile(10, 11, new WallTile());
-        level.setTile(10, 12, new WallTile());
-        level.setTile(10, 13, new WallTile());
-        level.setTile(10, 14, new WallTile());
+        
         
         createBufferStrategy(2);
         requestFocus();

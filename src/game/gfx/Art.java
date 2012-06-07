@@ -22,6 +22,13 @@ public class Art {
 	public static Bitmap entityFiller = load("/art/entity/entity_static.png");
 	public static Bitmap[][] entityFillerAni = cut("/art/entity/entity_ani.png", 32, 32);
 	
+	//mob
+	public static Bitmap[][] human_male = cut("/art/mob/human_male.png", 32, 32);
+	public static Bitmap[][] human_female = cut("/art/mob/human_female.png", 32, 32);
+	public static Bitmap[][] player = cut("/art/mob/player.png", 32, 32);
+	public static Bitmap[][] zombie = cut("/art/mob/zombie.png", 32, 32);
+	
+	
 	//wall
 	public static Bitmap wallTile = load("/art/tiles/wall.png");
 	public static int wallTileColor = getColour(wallTile);

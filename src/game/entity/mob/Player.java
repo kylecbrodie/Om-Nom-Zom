@@ -7,9 +7,9 @@ import game.math.Direction;
 import game.math.Vector2d;
 
 /**
+ * Player class :D
  * 
  * @author Kyle Brodie
- *
  */
 public class Player extends Mob {
 
@@ -46,7 +46,7 @@ public class Player extends Mob {
 		if(ticksElapsed > 12) {
 			ticksElapsed = 0;
 			frame++;
-			if(frame >= Art.entityFillerAni[dir].length) {
+			if(frame >= Art.player.length) {
 				frame = 0;
 			}
 		}
@@ -56,6 +56,6 @@ public class Player extends Mob {
 	@Override
 	public void render(Screen s) {
 		Vector2d pos = getDrawPos();
-		s.draw(Art.entityFillerAni[frame][dir], pos.x, pos.y);
+		s.draw(Art.player[frame][dir], pos.x, pos.y);
 	}
 }
