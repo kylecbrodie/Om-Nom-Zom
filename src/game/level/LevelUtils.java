@@ -25,7 +25,6 @@ public class LevelUtils {
 			level.setTile(level.getWidth(), y, new WallTile());
 		}
 		
-		
 		for(int y = 10; y <= level.getHeight() - 10; y++) {
 			level.setTile(10, y, new WallTile());
 		}

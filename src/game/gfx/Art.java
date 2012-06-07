@@ -36,6 +36,9 @@ public class Art {
 	//floor
 	public static Bitmap floorTile = load("/art/tiles/floor.png");
 	public static int floorTileColor = getColour(floorTile);
+	//street
+	public static Bitmap streetTile = load("/art/tiles/street_tiles.png");
+	public static int streetTileColor =  getColour(streetTile);
 	
 	/**
 	 * Return the bitmaps for a given piece of art, cut out from a sheet
