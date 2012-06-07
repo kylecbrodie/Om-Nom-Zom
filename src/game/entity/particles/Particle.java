@@ -4,6 +4,7 @@ import game.entity.Entity;
 import game.gfx.Art;
 import game.gfx.Bitmap;
 import game.gfx.Screen;
+import game.level.tile.Tile;
 
 /**
  * Represents a particle to be generated on the fly
@@ -29,6 +30,7 @@ public class Particle extends Entity {
 	 * @param bm the bitmap to look like.
 	 */
 	public Particle(double x, double y, double xa, double ya, Bitmap bm) {
+		setPos((int)(x / Tile.WIDTH), (int)(y / Tile.HEIGHT));
 		this.x = x;
 		this.y = y;
 		double pow = random.nextDouble() * 1 + 1;
@@ -38,15 +40,15 @@ public class Particle extends Entity {
 		life = random.nextInt(20) + 50;
 		
 		b = new Bitmap(4,4);
-		b.clear(Art.getColour(bm) | randomColorShift());
+		b.clear(Art.getColour(bm)/* | randomColorShift()*/);
 	}
 	
-	private int randomColorShift() {
+	/*private int randomColorShift() {
 		int r = random.nextInt(0x00FF0000) & 0x00FF0000;
 		int g = random.nextInt(0x0000FF00) & 0x0000FF00;
 		int b = random.nextInt(0x000000FF) & 0x000000FF;
 		return 0xFF000000 | r | g | b;
-	}
+	}*/
 
 	@Override
 	public void tick() {

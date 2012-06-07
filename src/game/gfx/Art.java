@@ -25,6 +25,7 @@ public class Art {
 	//mob
 	public static Bitmap[][] human_male = cut("/art/mob/human_male.png", 32, 32);
 	public static Bitmap[][] human_female = cut("/art/mob/human_female.png", 32, 32);
+
 	public static Bitmap[][] player = cut("/art/mob/player.png", 32, 32);
 	public static Bitmap[][] zombie = cut("/art/mob/zombie.png", 32, 32);
 	
@@ -72,12 +73,12 @@ public class Art {
 			int xTiles = (bi.getWidth() - bx) / w;
 			int yTiles = (bi.getHeight() - by) / h;
 
-			Bitmap[][] result = new Bitmap[xTiles][yTiles];
+			Bitmap[][] result = new Bitmap[yTiles][xTiles];
 
-			for (int x = 0; x < xTiles; x++) {
-				for (int y = 0; y < yTiles; y++) {
-					result[x][y] = new Bitmap(w, h);
-					bi.getRGB(bx + x * w, by + y * h, w, h, result[x][y].pixels, 0, w);
+			for (int y = 0; y < yTiles; y++) {
+				for (int x = 0; x < xTiles; x++) {
+					result[y][x] = new Bitmap(w, h);
+					bi.getRGB(bx + x * w, by + y * h, w, h, result[y][x].pixels, 0, w);
 				}
 			}
 

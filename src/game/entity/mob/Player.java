@@ -50,7 +50,7 @@ public class Player extends Zombie {
 		if(ticksElapsed > 12) {
 			ticksElapsed = 0;
 			frame++;
-			if(frame >= Art.player.length) {
+			if(frame >= Art.player[dir].length) {
 				frame = 0;
 			}
 		}
@@ -60,6 +60,6 @@ public class Player extends Zombie {
 	@Override
 	public void render(Screen s) {
 		Vector2d pos = getDrawPos();
-		s.draw(Art.player[frame][dir], pos.x, pos.y);
+		s.draw(Art.player[dir][frame], pos.x, pos.y);
 	}
 }
